@@ -12,10 +12,10 @@ const GRAVITY_SPEED = 0.06;
 const LATERAL_MOVEMENT = 1;
 const TEXT_COLOR = "white";
 
-// OBSTACLES
-// Scrolling Obstacles - akw: 1045 Lab 11 - Summer 2018
-const OBSTACLES_PER_SEC = 2;
-const OBSTACLE_SIZE = 20;
+// ASTEROIDS
+// Scrolling Asteroids - akw: 1045 Lab 11 - Summer 2018
+const ASTEROIDS_PER_SEC = 2;
+const ASTEROID_SIZE = 20;
 const SPD_MIN = 1;
 const SPD_MAX = 5;
 
@@ -33,7 +33,7 @@ SPACEMAN_IMG.src = "images/spaceman.png";
 // Game variables
 let startScreen = true;
 let player;
-let obstacles = [];
+let asteroids = [];
 let volcanos = [];
 let maxVolcanos = 3;
 let score = 0;
@@ -105,7 +105,7 @@ class Player {
       }
     }
 
-    if (this.hasCollision(obstacles)) {
+    if (this.hasCollision(asteroids)) {
       // TODO: Implement loss of life
       // score -= 5;
     }
@@ -126,7 +126,7 @@ class Player {
   }
 
   isCollision(object) {
-    return this.pos.distance(object.pos) < OBSTACLE_SIZE;
+    return this.pos.distance(object.pos) < ASTEROID_SIZE;
   }
 
   draw(ctx) {
@@ -146,7 +146,7 @@ class Player {
   }
 }
 
-class Obstacle {
+class Asteroid {
   constructor(x, y, dx) {
     this.pos = new Point(x, y);
     this.dx = dx;
@@ -207,7 +207,7 @@ class Volcano {
 drawEverything(); // Start screen
 
 function initGame() {
-  player = new Player(50, CANVAS_BOTTOM - PLAYER_HEIGHT);
+  player = new Player(50, CANVAS_BOTTOM / 2);
 
   setInterval(tick, 1000 / FPS);
 
@@ -227,24 +227,24 @@ function update() {
   bgPos -= 0.5;
   canvas.style.backgroundPosition = bgPos + "px -30px, " + bgPos + "px -30px";
 
-  if (obstacles.length <= 5) {
-    generateObstacles();
+  if (asteroids.length <= 5) {
+    generateAsteroids();
   }
 
   rollDiceForVolcano();
 
   player.update();
 
-  let initialObstacles = obstacles.length;
+  let initialAsteroids = asteroids.length;
 
-  obstacles.forEach(obstacle => obstacle.update());
-  obstacles = obstacles.filter(obstacle => obstacle.isVisible());
+  asteroids.forEach(asteroid => asteroid.update());
+  asteroids = asteroids.filter(asteroid => asteroid.isVisible());
 
   volcanos.forEach(volcano => volcano.update());
   volcanos = volcanos.filter(volcano => volcano.isVisible());
 
   // Update score
-  score += initialObstacles - obstacles.length;
+  score += initialAsteroids - asteroids.length;
 }
 
 function drawEverything() {
@@ -259,7 +259,7 @@ function drawEverything() {
 
     // Game Objects
     player.draw(ctx);
-    obstacles.forEach(obstacle => obstacle.draw(ctx));
+    asteroids.forEach(asteroid => asteroid.draw(ctx));
     volcanos.forEach(volcano => volcano.draw(ctx));
 
     // Art
@@ -267,16 +267,16 @@ function drawEverything() {
   }
 }
 
-function generateObstacles() {
+function generateAsteroids() {
   let randY = rand(0, CANVAS_BOTTOM);
   let length = rand(0, 40);
-  let obstacle = new Obstacle(
-    canvas.width - OBSTACLE_SIZE,
+  let asteroid = new Asteroid(
+    canvas.width - ASTEROID_SIZE,
     rand(0, canvas.height),
     rand(SPD_MIN, SPD_MAX)
   );
 
-  obstacles.push(obstacle);
+  asteroids.push(asteroid);
 }
 
 function rollDiceForVolcano() {

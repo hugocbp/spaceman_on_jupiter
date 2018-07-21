@@ -1,11 +1,12 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
-const FPS = 30;
+const FPS = 60;
 const PLAYER_HEIGHT = 50;
 const PLAYER_WIDTH = 20;
 const CANVAS_BOTTOM = canvas.height;
-const GRAVITY = 5;
+const THRUST_SPEED = 10;
+const GRAVITY_SPEED = 5;
 
 let player;
 
@@ -31,17 +32,33 @@ class Player {
   constructor(x, y) {
     this.pos = new Point(x, y);
     this.thrusting = false;
+    this.currentThrust = 0;
+    this.currentGravityVelocity = GRAVITY_SPEED;
   }
 
   thrust() {
-    console.log("Thrusting");
+    // console.log("Thrusting");
+    ctx.save();
     this.thrusting = true;
-    this.pos.translate(0, -10);
+    this.currentThrust += THRUST_SPEED;
+    this.pos.translate(0, -this.currentThrust);
+    ctx.restore();
   }
 
   update() {
+    if (this.pos.y <= 0) {
+      this.pos.y = 0;
+    }
+
+    if (this.pos.y >= CANVAS_BOTTOM - PLAYER_HEIGHT) {
+      this.pos.y = CANVAS_BOTTOM - PLAYER_HEIGHT;
+      this.currentGravityVelocity = 0;
+    }
+
+    // Gravity
     if (this.pos.y <= CANVAS_BOTTOM - PLAYER_HEIGHT && !this.thrusting) {
-      this.pos.translate(0, GRAVITY);
+      this.currentGravityVelocity += GRAVITY_SPEED;
+      this.pos.translate(0, this.currentGravityVelocity);
     }
   }
 
@@ -64,7 +81,7 @@ function tick() {
 }
 
 function initGame() {
-  player = new Player(50, canvas.height - PLAYER_HEIGHT);
+  player = new Player(50, CANVAS_BOTTOM - PLAYER_HEIGHT);
 }
 
 function update() {
@@ -92,5 +109,6 @@ window.addEventListener("keyup", e => {
   if (e.key === "ArrowUp") {
     // console.log("Thrust");
     player.thrusting = false;
+    player.currentThrust = 0;
   }
 });

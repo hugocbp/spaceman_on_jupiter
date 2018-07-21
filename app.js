@@ -2,13 +2,13 @@ let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
 const FPS = 60;
-const PLAYER_HEIGHT = 50;
-const PLAYER_WIDTH = 20;
+const PLAYER_HEIGHT = 104;
+const PLAYER_WIDTH = 64;
 const CANVAS_BOTTOM = canvas.height;
 const CANVAS_RIGHT = canvas.width;
 const CANVAS_LEFT = 0;
 const THRUST_SPEED = 0.2;
-const GRAVITY_SPEED = 0.07;
+const GRAVITY_SPEED = 0.06;
 const LATERAL_MOVEMENT = 1;
 const TEXT_COLOR = "white";
 
@@ -23,6 +23,8 @@ const SPD_MAX = 5;
 let bgPos = 30;
 const ASTEROID_IMG = new Image();
 ASTEROID_IMG.src = "images/asteroid_small.png";
+const SPACEMAN_IMG = new Image();
+SPACEMAN_IMG.src = "images/spaceman.png";
 
 let player;
 let obstacles = [];
@@ -122,8 +124,15 @@ class Player {
   draw(ctx) {
     ctx.save();
 
-    ctx.fillStyle = "white";
-    ctx.fillRect(this.pos.x, this.pos.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+    // ctx.fillStyle = "white";
+    // ctx.fillRect(this.pos.x, this.pos.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+    ctx.drawImage(
+      SPACEMAN_IMG,
+      this.pos.x,
+      this.pos.y,
+      PLAYER_WIDTH,
+      PLAYER_HEIGHT
+    );
 
     ctx.restore();
   }

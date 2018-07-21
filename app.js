@@ -2,8 +2,8 @@ let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
 const FPS = 60;
-const PLAYER_HEIGHT = 104;
-const PLAYER_WIDTH = 64;
+const PLAYER_HEIGHT = 104; // double spaceman img
+const PLAYER_WIDTH = 64; // double spaceman img
 const CANVAS_BOTTOM = canvas.height;
 const CANVAS_RIGHT = canvas.width;
 const CANVAS_LEFT = 0;
@@ -26,6 +26,8 @@ ASTEROID_IMG.src = "images/asteroid_small.png";
 const SPACEMAN_IMG = new Image();
 SPACEMAN_IMG.src = "images/spaceman.png";
 
+// Game variables
+let startScreen = true;
 let player;
 let obstacles = [];
 let score = 0;
@@ -161,24 +163,22 @@ class Obstacle {
   }
 }
 
-// To be used with a click event listener to start game
-initGame();
+drawEverything(); // Start screen
 
-// Main game loop
-setInterval(tick, 1000 / FPS);
+function initGame() {
+  player = new Player(50, CANVAS_BOTTOM - PLAYER_HEIGHT);
 
-// Game Time
-setInterval(() => {
-  timeInSeconds += 1;
-}, 1000);
+  setInterval(tick, 1000 / FPS);
+
+  // Game Time
+  setInterval(() => {
+    timeInSeconds += 1;
+  }, 1000);
+}
 
 function tick() {
   update();
   drawEverything();
-}
-
-function initGame() {
-  player = new Player(50, CANVAS_BOTTOM - PLAYER_HEIGHT);
 }
 
 function update() {
@@ -205,23 +205,19 @@ function drawEverything() {
   ctx.fillStyle = "black";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // UI
-  ctx.fillStyle = TEXT_COLOR;
-  ctx.font = "bold 30px sans-serif";
-  ctx.fillText("Score:" + score, 5, 30);
+  if (startScreen) {
+    drawStartScreen();
+  } else {
+    // UI
+    drawGameUI();
 
-  ctx.font = "bold 30px sans-serif";
-  ctx.fillText("Time:" + timeInSeconds, 5, 60);
+    // Game Objects
+    player.draw(ctx);
+    obstacles.forEach(obstacle => obstacle.draw(ctx));
 
-  ctx.font = "bold 30px sans-serif";
-  ctx.fillText("Lives:" + 0, 5, 90);
-
-  // Game Objects
-  player.draw(ctx);
-  obstacles.forEach(obstacle => obstacle.draw(ctx));
-
-  // Art
-  drawBottomPlanet();
+    // Art
+    drawBottomPlanet();
+  }
 }
 
 function generateObstacles() {
@@ -234,6 +230,39 @@ function generateObstacles() {
   );
 
   obstacles.push(obstacle);
+}
+
+function drawStartScreen() {
+  ctx.save();
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = TEXT_COLOR;
+  ctx.font = "bold 100px sans-serif";
+  ctx.fillText("Spaceman on Jupiter", canvas.width / 2, canvas.height / 2 - 50);
+
+  ctx.font = "30px sans-serif";
+  ctx.fillText(
+    "CONTROLS: UP to use thrust, LEFT and RIGHT to move",
+    canvas.width / 2,
+    canvas.height - 200
+  );
+
+  ctx.font = "30px sans-serif";
+  ctx.fillText("Click to Start", canvas.width / 2, canvas.height - 50);
+
+  ctx.restore();
+}
+
+function drawGameUI() {
+  ctx.fillStyle = TEXT_COLOR;
+  ctx.font = "bold 30px sans-serif";
+  ctx.fillText("Score:" + score, 5, 30);
+
+  ctx.font = "bold 30px sans-serif";
+  ctx.fillText("Time:" + timeInSeconds, 5, 60);
+
+  ctx.font = "bold 30px sans-serif";
+  ctx.fillText("Lives:" + 0, 5, 90);
 }
 
 function drawBottomPlanet() {
@@ -284,6 +313,11 @@ window.addEventListener("keyup", e => {
   if (e.key === "ArrowRight") {
     player.movingRight = false;
   }
+});
+
+canvas.addEventListener("click", () => {
+  startScreen = false;
+  initGame();
 });
 
 /*

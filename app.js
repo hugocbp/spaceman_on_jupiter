@@ -21,6 +21,8 @@ const SPD_MAX = 5;
 
 // ART
 let bgPos = 30;
+const ASTEROID_IMG = new Image();
+ASTEROID_IMG.src = "images/asteroid_small.png";
 
 let player;
 let obstacles = [];
@@ -142,11 +144,9 @@ class Obstacle {
     return true;
   }
   draw(ctx) {
-    // draw the line onto the context
     ctx.save();
 
-    ctx.fillStyle = "red";
-    ctx.fillRect(this.pos.x, this.pos.y, OBSTACLE_SIZE, OBSTACLE_SIZE);
+    ctx.drawImage(ASTEROID_IMG, this.pos.x, this.pos.y);
 
     ctx.restore();
   }

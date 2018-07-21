@@ -170,8 +170,14 @@ function update() {
   }
 
   player.update();
+
+  let initialObstacles = obstacles.length;
+
   obstacles.forEach(obstacle => obstacle.update());
   obstacles = obstacles.filter(obstacle => obstacle.isVisible());
+
+  // Update score
+  score += initialObstacles - obstacles.length;
 }
 
 function drawEverything() {

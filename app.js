@@ -19,6 +19,10 @@ const OBSTACLE_SIZE = 20;
 const SPD_MIN = 1;
 const SPD_MAX = 5;
 
+// VOLCANO
+const VOLCANO_SPD_MIN = 2;
+const VOLCANO_SPD_MAX = 4;
+
 // ART
 let bgPos = 30;
 const ASTEROID_IMG = new Image();
@@ -30,6 +34,8 @@ SPACEMAN_IMG.src = "images/spaceman.png";
 let startScreen = true;
 let player;
 let obstacles = [];
+let volcanos = [];
+let maxVolcanos = 3;
 let score = 0;
 let timeInSeconds = 0;
 
@@ -163,6 +169,41 @@ class Obstacle {
   }
 }
 
+class Volcano {
+  constructor(baseX, baseY, topX, topY, maxHeight, speed) {
+    this.base = new Point(baseX, baseY);
+    this.top = new Point(topX, topY);
+    this.maxHeight = maxHeight;
+    this.speed = new Point(0, speed);
+  }
+
+  update() {
+    if (this.top.y < CANVAS_BOTTOM - this.maxHeight) {
+      this.speed.y *= -1;
+    }
+
+    this.top.y -= this.speed.y;
+  }
+
+  isVisible() {
+    return this.top.y <= CANVAS_BOTTOM;
+  }
+
+  draw(ctx) {
+    ctx.save();
+
+    ctx.strokeStyle = "orange";
+    ctx.lineWidth = 50;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(this.base.x, this.base.y);
+    ctx.lineTo(this.top.x, this.top.y);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
 drawEverything(); // Start screen
 
 function initGame() {
@@ -190,12 +231,17 @@ function update() {
     generateObstacles();
   }
 
+  rollDiceForVolcano();
+
   player.update();
 
   let initialObstacles = obstacles.length;
 
   obstacles.forEach(obstacle => obstacle.update());
   obstacles = obstacles.filter(obstacle => obstacle.isVisible());
+
+  volcanos.forEach(volcano => volcano.update());
+  volcanos = volcanos.filter(volcano => volcano.isVisible());
 
   // Update score
   score += initialObstacles - obstacles.length;
@@ -214,6 +260,7 @@ function drawEverything() {
     // Game Objects
     player.draw(ctx);
     obstacles.forEach(obstacle => obstacle.draw(ctx));
+    volcanos.forEach(volcano => volcano.draw(ctx));
 
     // Art
     drawBottomPlanet();
@@ -230,6 +277,23 @@ function generateObstacles() {
   );
 
   obstacles.push(obstacle);
+}
+
+function rollDiceForVolcano() {
+  if (rand(0, 100) > 99 && volcanos.length < maxVolcanos) {
+    console.log("Volcano!");
+    let randX = rand(0, CANVAS_RIGHT);
+    volcanos.push(
+      new Volcano(
+        randX,
+        CANVAS_BOTTOM,
+        randX,
+        CANVAS_BOTTOM,
+        rand(0, canvas.height - 200),
+        rand(VOLCANO_SPD_MIN, VOLCANO_SPD_MAX)
+      )
+    );
+  }
 }
 
 function drawStartScreen() {
@@ -280,6 +344,7 @@ function drawBottomPlanet() {
 // CONTROLS
 window.addEventListener("keydown", e => {
   if (e.key === "ArrowUp") {
+    player.currentGravityVelocity = 0;
     player.thrusting = true;
   }
 });
@@ -316,8 +381,10 @@ window.addEventListener("keyup", e => {
 });
 
 canvas.addEventListener("click", () => {
-  startScreen = false;
-  initGame();
+  if (startScreen) {
+    startScreen = false;
+    initGame();
+  }
 });
 
 /*

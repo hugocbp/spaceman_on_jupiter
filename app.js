@@ -8,7 +8,8 @@ const CANVAS_BOTTOM = canvas.height;
 const CANVAS_RIGHT = canvas.width;
 const CANVAS_LEFT = 0;
 const THRUST_SPEED = 0.2;
-const GRAVITY_SPEED = 0.01;
+const GRAVITY_SPEED = 0.07;
+const LATERAL_MOVEMENT = 1;
 
 // OBSTACLES
 // Scrolling Obstacles - akw: 1045 Lab 11 - Summer 2018
@@ -44,6 +45,9 @@ class Player {
     this.thrusting = false;
     this.currentThrust = 0;
     this.currentGravityVelocity = GRAVITY_SPEED;
+
+    this.movingLeft = false;
+    this.movingRight = false;
   }
 
   update() {
@@ -71,6 +75,25 @@ class Player {
       this.pos.translate(0, -this.currentThrust);
       ctx.restore();
     }
+
+    // Sides
+    if (this.pos.x > 0 && this.pos.x < CANVAS_RIGHT) {
+      if (this.movingRight) {
+        this.pos.x += LATERAL_MOVEMENT;
+      }
+
+      if (this.movingLeft) {
+        this.pos.x -= LATERAL_MOVEMENT;
+      }
+    }
+  }
+
+  moveForward() {
+    this.pos.x += 10;
+  }
+
+  moveBackward() {
+    this.pos.x -= 10;
   }
 
   draw(ctx) {
@@ -162,6 +185,30 @@ window.addEventListener("keyup", e => {
   if (e.key === "ArrowUp") {
     player.thrusting = false;
     player.currentThrust = 0;
+  }
+});
+
+window.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") {
+    player.movingLeft = true;
+  }
+});
+
+window.addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft") {
+    player.movingLeft = false;
+  }
+});
+
+window.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") {
+    player.movingRight = true;
+  }
+});
+
+window.addEventListener("keyup", e => {
+  if (e.key === "ArrowRight") {
+    player.movingRight = false;
   }
 });
 

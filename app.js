@@ -10,6 +10,7 @@ const CANVAS_LEFT = 0;
 const THRUST_SPEED = 0.2;
 const GRAVITY_SPEED = 0.07;
 const LATERAL_MOVEMENT = 1;
+const TEXT_COLOR = "white";
 
 // OBSTACLES
 // Scrolling Obstacles - akw: 1045 Lab 11 - Summer 2018
@@ -20,6 +21,8 @@ const SPD_MAX = 5;
 
 let player;
 let obstacles = [];
+let score = 0;
+let timeInSeconds = 0;
 
 // Point Class - akw: 1045 Assignment 11 - Summer 2018
 class Point {
@@ -89,7 +92,7 @@ class Player {
 
     if (this.hasCollision(obstacles)) {
       // TODO: Implement loss of life
-      console.log("Collided");
+      // score -= 5;
     }
   }
 
@@ -102,6 +105,7 @@ class Player {
     this.pos.x -= 10;
   }
 
+  // Collision logic - akw: 1045 Assignment 11 - Summer 2018
   hasCollision(objects) {
     return objects.some(object => this.isCollision(object));
   }
@@ -147,6 +151,9 @@ class Obstacle {
 
 initGame();
 setInterval(tick, 1000 / FPS);
+setInterval(() => {
+  timeInSeconds += 1;
+}, 1000);
 
 function tick() {
   update();
@@ -170,6 +177,17 @@ function update() {
 function drawEverything() {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = TEXT_COLOR;
+  ctx.font = "bold 30px sans-serif";
+  ctx.fillText("Score:" + score, 5, 30);
+
+  ctx.font = "bold 30px sans-serif";
+  ctx.fillText("Time:" + timeInSeconds, 5, 60);
+
+  ctx.font = "bold 30px sans-serif";
+  ctx.fillText("Lives:" + 0, 5, 90);
+
   // TODO: Debug below
   // ctx.clearRect(0, 0, canvas.width, canvas.height);
   obstacles.forEach(obstacle => obstacle.draw(ctx));

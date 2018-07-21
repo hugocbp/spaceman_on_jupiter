@@ -13,9 +13,9 @@ const GRAVITY_SPEED = 5;
 // OBSTACLES
 // Scrolling Obstacles - akw: 1045 Lab 11 - Summer 2018
 const OBSTACLES_PER_SEC = 2;
-const OBSTACLE_LENGTH = 50;
+const OBSTACLE_SIZE = 20;
 const SPD_MIN = 1;
-const SPD_MAX = 10;
+const SPD_MAX = 5;
 
 let player;
 let obstacles = [];
@@ -101,7 +101,7 @@ class Obstacle {
     ctx.save();
 
     ctx.fillStyle = "red";
-    ctx.fillRect(this.pos.x, this.pos.y, 50, 20);
+    ctx.fillRect(this.pos.x, this.pos.y, OBSTACLE_SIZE, OBSTACLE_SIZE);
 
     ctx.restore();
   }
@@ -142,7 +142,7 @@ function generateObstacles() {
   let randY = rand(0, CANVAS_BOTTOM);
   let length = rand(0, 40);
   let obstacle = new Obstacle(
-    canvas.width - OBSTACLE_LENGTH,
+    canvas.width - OBSTACLE_SIZE,
     rand(0, canvas.height),
     rand(SPD_MIN, SPD_MAX)
   );

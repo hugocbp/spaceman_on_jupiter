@@ -161,8 +161,13 @@ class Obstacle {
   }
 }
 
+// To be used with a click event listener to start game
 initGame();
+
+// Main game loop
 setInterval(tick, 1000 / FPS);
+
+// Game Time
 setInterval(() => {
   timeInSeconds += 1;
 }, 1000);
@@ -200,6 +205,7 @@ function drawEverything() {
   ctx.fillStyle = "black";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // UI
   ctx.fillStyle = TEXT_COLOR;
   ctx.font = "bold 30px sans-serif";
   ctx.fillText("Score:" + score, 5, 30);
@@ -210,10 +216,12 @@ function drawEverything() {
   ctx.font = "bold 30px sans-serif";
   ctx.fillText("Lives:" + 0, 5, 90);
 
-  // TODO: Debug below
-  // ctx.clearRect(0, 0, canvas.width, canvas.height);
-  obstacles.forEach(obstacle => obstacle.draw(ctx));
+  // Game Objects
   player.draw(ctx);
+  obstacles.forEach(obstacle => obstacle.draw(ctx));
+
+  // Art
+  drawBottomPlanet();
 }
 
 function generateObstacles() {
@@ -226,6 +234,18 @@ function generateObstacles() {
   );
 
   obstacles.push(obstacle);
+}
+
+function drawBottomPlanet() {
+  ctx.save();
+
+  ctx.fillStyle = "orange";
+  ctx.translate(canvas.width / 2, canvas.height);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, canvas.width / 2 + 10, 20, 0, Math.PI, true);
+  ctx.fill();
+
+  ctx.restore();
 }
 
 // CONTROLS

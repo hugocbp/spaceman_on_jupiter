@@ -86,14 +86,28 @@ class Player {
         this.pos.x -= LATERAL_MOVEMENT;
       }
     }
+
+    if (this.hasCollision(obstacles)) {
+      // TODO: Implement loss of life
+      console.log("Collided");
+    }
   }
 
+  // TODO: Refactor lateral movement
   moveForward() {
     this.pos.x += 10;
   }
 
   moveBackward() {
     this.pos.x -= 10;
+  }
+
+  hasCollision(objects) {
+    return objects.some(object => this.isCollision(object));
+  }
+
+  isCollision(object) {
+    return this.pos.distance(object.pos) < OBSTACLE_SIZE;
   }
 
   draw(ctx) {

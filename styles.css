@@ -3,3 +3,10 @@ body {
   justify-content: center;
   align-content: center;
 }
+
+canvas {
+  background-image: url(images/stars_small_1.png), url(images/nebula_blue.png);
+  background-repeat: repeat-x, repeat-x;
+  background-position: 0 -30px, 0 -30px;
+  background-size: cover, cover;
+}

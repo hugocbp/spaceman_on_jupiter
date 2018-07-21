@@ -19,6 +19,9 @@ const OBSTACLE_SIZE = 20;
 const SPD_MIN = 1;
 const SPD_MAX = 5;
 
+// ART
+let bgPos = 30;
+
 let player;
 let obstacles = [];
 let score = 0;
@@ -165,6 +168,10 @@ function initGame() {
 }
 
 function update() {
+  // Moving BG code: http://jsfiddle.net/AbdiasSoftware/zupjZ/
+  bgPos -= 0.5;
+  canvas.style.backgroundPosition = bgPos + "px -30px, " + bgPos + "px -30px";
+
   if (obstacles.length <= 5) {
     generateObstacles();
   }
@@ -182,7 +189,7 @@ function update() {
 
 function drawEverything() {
   ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = TEXT_COLOR;
   ctx.font = "bold 30px sans-serif";

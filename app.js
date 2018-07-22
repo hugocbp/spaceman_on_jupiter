@@ -5,6 +5,8 @@
 
   Name: Hugo Carlos Borges Pinto
   SID: 100311857
+
+  Version Date: 2018-07-22
 */
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
@@ -19,6 +21,9 @@ const PLAYER_WIDTH = 64; // double spaceman img
 const CANVAS_BOTTOM = canvas.height;
 const CANVAS_RIGHT = canvas.width;
 const CANVAS_LEFT = 0;
+const CANVAS_TOP = 0;
+const CANVAS_CENTRE_X = canvas.width / 2;
+const CANVAS_CENTRE_Y = canvas.height / 2;
 const DIFFICULTY_TIME = 5000; // in ms
 
 // PHYSICS
@@ -35,7 +40,7 @@ const VOLCANO_SPD_MIN = 2;
 
 // ART
 let bgPos = 30;
-let textColor = "white";
+const TEXT_COLOR = "white";
 const ASTEROID_IMG = new Image();
 ASTEROID_IMG.src = "images/asteroid_small.png";
 const VOLCANO_UP_IMG = new Image();
@@ -125,7 +130,7 @@ class Player {
   }
 
   update() {
-    if (this.pos.y <= 0) {
+    if (this.pos.y <= CANVAS_TOP) {
       handleDeath("orbit");
     }
 
@@ -155,33 +160,28 @@ class Player {
 
     // TODO: Refactor or redesign lateral movement for lateral momentum?
     // Sides (LEFT & RIGHT)
-    if (this.pos.x > 0 && this.pos.x < CANVAS_RIGHT) {
-      if (this.movingRight) {
-        this.pos.x += LATERAL_MOVEMENT;
-      }
+    // TODO: Fix move right out of canvas bug
+    if (this.movingRight && this.pos.x < CANVAS_RIGHT - LATERAL_MOVEMENT) {
+      this.pos.x += LATERAL_MOVEMENT;
+    }
 
-      if (this.movingLeft) {
-        this.pos.x -= LATERAL_MOVEMENT;
-      }
+    if (this.movingLeft && this.pos.x > CANVAS_LEFT + LATERAL_MOVEMENT) {
+      this.pos.x -= LATERAL_MOVEMENT;
     }
 
     // Collisions
-    if (this.hasCollision(asteroids)) {
-      handleDeath("asteroid");
-    }
-
-    if (this.hasCollision(volcanoes)) {
-      handleDeath("volcano");
-    }
+    if (this.hasCollision(asteroids)) handleDeath("asteroid");
+    if (this.hasCollision(volcanoes)) handleDeath("volcano");
   }
 
   // Collision logic - akn: 1045 Assignment 11 - Summer 2018
   hasCollision(objects) {
-    return objects.some(object => this.isColliding(object));
+    return objects.some(object => this.isCollidingWith(object));
   }
 
-  isColliding(object) {
-    return this.pos.distance(object.pos) < 40; // TODO: Debug collision distances
+  isCollidingWith(object) {
+    // TODO: Debug collision distances
+    return this.pos.distance(object.pos) < 40;
   }
 
   draw(ctx) {
@@ -299,14 +299,8 @@ function updateEverything() {
 
   if (deathScreen) return;
 
-  if (asteroids.length <= maxAsteroids) {
-    generateAsteroids();
-  }
-
-  if (volcanoes.length <= maxVolcanoes) {
-    generateVolcanoes();
-  }
-
+  if (asteroids.length <= maxAsteroids) generateAsteroids();
+  if (volcanoes.length <= maxVolcanoes) generateVolcanoes();
   player.update();
 
   // For Score - TODO: Rethink score?
@@ -326,7 +320,7 @@ function generateAsteroids() {
   asteroids.push(
     new Asteroid(
       canvas.width - ASTEROID_SIZE,
-      rand(0, canvas.height),
+      rand(0, CANVAS_BOTTOM),
       rand(ASTEROID_SPD_MIN, asteroidSpeedMax)
     )
   );
@@ -340,7 +334,7 @@ function generateVolcanoes() {
       new Volcano(
         randX,
         CANVAS_BOTTOM,
-        rand(0, canvas.height),
+        rand(0, CANVAS_BOTTOM),
         rand(VOLCANO_SPD_MIN, volcanoSpeedMax)
       )
     );
@@ -364,22 +358,20 @@ function handleDeath(deathCause) {
 
 function drawEverything() {
   ctx.fillStyle = "black";
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, canvas.width, CANVAS_BOTTOM);
 
   if (startScreen) {
     drawStartScreen();
   } else if (deathScreen) {
     drawDeathScreen();
   } else {
-    // Game UI
-    drawGameUI();
-
     // Game Objects
     player.draw(ctx);
     asteroids.forEach(asteroid => asteroid.draw(ctx));
     volcanoes.forEach(volcano => volcano.draw(ctx));
 
-    // Game Art
+    // Game UI & Art
+    drawGameUI();
     drawBottomPlanet();
   }
 }
@@ -390,25 +382,20 @@ function drawStartScreen() {
   ctx.textAlign = "center";
   ctx.fillStyle = "orange";
   ctx.font = "bold 90px Orbitron";
-  // TODO: Create CANVAS_CENTRE_X ?
-  ctx.fillText(
-    "Spaceman on Jupiter",
-    canvas.width / 2,
-    canvas.height / 2 - 100
-  );
+  ctx.fillText("Spaceman on Jupiter", CANVAS_CENTRE_X, CANVAS_CENTRE_Y - 100);
 
-  ctx.fillStyle = textColor;
+  ctx.fillStyle = TEXT_COLOR;
   ctx.font = "40px Orbitron";
   ctx.fillText(
     "CONTROLS: UP to thrust, LEFT and RIGHT to move",
-    canvas.width / 2,
-    canvas.height - 300
+    CANVAS_CENTRE_X,
+    CANVAS_BOTTOM - 300
   );
 
-  ctx.fillText("OBJECTIVE: Don't die", canvas.width / 2, canvas.height - 220);
+  ctx.fillText("OBJECTIVE: Don't die", CANVAS_CENTRE_X, CANVAS_BOTTOM - 220);
 
   ctx.font = "30px Orbitron";
-  ctx.fillText("Click to Start", canvas.width / 2, canvas.height - 50);
+  ctx.fillText("Click to Start", CANVAS_CENTRE_X, CANVAS_BOTTOM - 50);
 
   ctx.restore();
 }
@@ -420,39 +407,33 @@ function drawDeathScreen() {
 
   ctx.fillStyle = death[deathReason].color;
   ctx.font = "50px Orbitron";
-  ctx.fillText(death[deathReason].msg, canvas.width / 2, canvas.height - 450);
+  ctx.fillText(death[deathReason].msg, CANVAS_CENTRE_X, CANVAS_BOTTOM - 450);
 
   ctx.font = "30px Orbitron";
-  ctx.fillText("Score: " + score, canvas.width / 2, canvas.height - 300);
-
+  ctx.fillText("Score: " + score, CANVAS_CENTRE_X, CANVAS_BOTTOM - 300);
   ctx.fillText(
-    "Time: " + timeInSeconds + " second(s)",
-    canvas.width / 2,
-    canvas.height - 250
+    "You survided for " + timeInSeconds + " second(s)",
+    CANVAS_CENTRE_X,
+    CANVAS_BOTTOM - 250
   );
-
   ctx.fillText(
     death[deathReason].explanation,
-    canvas.width / 2,
-    canvas.height - 100
+    CANVAS_CENTRE_X,
+    CANVAS_BOTTOM - 100
   );
-
-  ctx.font = "30px Orbitron";
-  ctx.fillText("Click to play again", canvas.width / 2, canvas.height - 50);
+  ctx.fillText("Click to play again", CANVAS_CENTRE_X, CANVAS_BOTTOM - 50);
 
   ctx.fillStyle = "red";
   ctx.font = "bold 200px Orbitron";
-  ctx.fillText("You died", canvas.width / 2, canvas.height / 2 - 200);
+  ctx.fillText("You died", CANVAS_CENTRE_X, CANVAS_CENTRE_Y - 200);
 
   ctx.restore();
 }
 
 function drawGameUI() {
-  ctx.fillStyle = "white";
+  ctx.fillStyle = TEXT_COLOR;
   ctx.font = "bold 30px Orbitron";
   ctx.fillText("Score:" + score, 5, 30);
-
-  ctx.font = "bold 30px Orbitron";
   ctx.fillText("Time:" + timeInSeconds, 5, 60);
 }
 
@@ -460,9 +441,9 @@ function drawBottomPlanet() {
   ctx.save();
 
   ctx.fillStyle = "orange";
-  ctx.translate(canvas.width / 2, canvas.height);
+  ctx.translate(CANVAS_CENTRE_X, CANVAS_BOTTOM);
   ctx.beginPath();
-  ctx.ellipse(0, 0, canvas.width / 2 + 10, 20, 0, Math.PI, true);
+  ctx.ellipse(0, 0, CANVAS_CENTRE_X + 10, 20, 0, Math.PI, true);
   ctx.fill();
 
   ctx.restore();
@@ -482,14 +463,18 @@ canvas.addEventListener("click", () => {
 function startGameControls() {
   window.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") {
-      player.currentGravityVelocity = 0;
       player.thrusting = true;
+
+      // TODO: Move logic to Player class?
+      player.currentGravityVelocity = 0;
     }
   });
 
   window.addEventListener("keyup", e => {
     if (e.key === "ArrowUp") {
       player.thrusting = false;
+
+      // TODO: Move logic to Player class?
       player.currentThrust = 0;
     }
   });

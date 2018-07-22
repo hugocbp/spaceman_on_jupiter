@@ -1,6 +1,8 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
+const DEBUG_MODE = true;
+
 const FPS = 60;
 const PLAYER_HEIGHT = 104; // double spaceman img
 const PLAYER_WIDTH = 64; // double spaceman img
@@ -16,12 +18,10 @@ const TEXT_COLOR = "white";
 // Scrolling Asteroids - akw: 1045 Lab 11 - Summer 2018
 const ASTEROIDS_PER_SEC = 2;
 const ASTEROID_SIZE = 20;
-const SPD_MIN = 1;
-const SPD_MAX = 5;
+const ASTEROID_SPD_MIN = 1;
 
 // VOLCANO
 const VOLCANO_SPD_MIN = 2;
-const VOLCANO_SPD_MAX = 4;
 
 // ART
 let bgPos = 30;
@@ -40,11 +40,17 @@ let deathScreen = false;
 let player;
 let asteroids = [];
 let volcanos = [];
-let maxVolcanos = 3;
 let score = 0;
 let timeInSeconds = 0;
 let deathMsg = "Don't die!";
 let timer;
+
+// Difficulty variables
+let maxAsteroids = 3;
+let asteroidSpeedMax = 5;
+let maxVolcanos = 3;
+let volcanoSpeedMax = 4;
+let volcanoChance = 2;
 
 // Point Class - akw: 1045 Assignment 11 - Summer 2018
 class Point {
@@ -54,8 +60,10 @@ class Point {
   }
 
   translate(dx, dy) {
-    this.x += dx;
-    this.y += dy;
+    if (!DEBUG_MODE) {
+      this.x += dx;
+      this.y += dy;
+    }
   }
 
   distance(other) {
@@ -211,13 +219,17 @@ class Volcano {
   }
 }
 
-drawEverything(); // Start screen
+drawStartScreen(); // Start screen before game init
 
 function initGame() {
   player = new Player(50, CANVAS_BOTTOM / 2);
   startGameControls();
 
+  // Game Loop
   setInterval(tick, 1000 / FPS);
+
+  // Difficulty timer
+  setInterval(increaseDifficulty, 5000);
 
   // Game Time
   timer = setInterval(() => {
@@ -237,12 +249,13 @@ function update() {
 
   if (deathScreen) return;
 
-  // TODO: Refactor for difficulty
-  if (asteroids.length <= 5) {
+  if (asteroids.length <= maxAsteroids) {
     generateAsteroids();
   }
 
-  rollDiceForVolcano();
+  if (volcanos.length <= maxVolcanos) {
+    generateVolcanos();
+  }
 
   player.update();
 
@@ -256,6 +269,61 @@ function update() {
 
   // Update score
   score += initialAsteroids - asteroids.length;
+}
+
+function generateAsteroids() {
+  let randY = rand(0, CANVAS_BOTTOM);
+  let length = rand(0, 40);
+  let asteroid = new Asteroid(
+    canvas.width - ASTEROID_SIZE,
+    rand(0, canvas.height),
+    rand(ASTEROID_SPD_MIN, asteroidSpeedMax)
+  );
+
+  asteroids.push(asteroid);
+}
+
+function generateVolcanos() {
+  if (rand(0, 100) > 100 - volcanoChance) {
+    console.log("Volcano!");
+    let randX = rand(0, CANVAS_RIGHT);
+    volcanos.push(
+      new Volcano(
+        randX,
+        CANVAS_BOTTOM,
+        rand(0, canvas.height - 200),
+        rand(VOLCANO_SPD_MIN, volcanoSpeedMax)
+      )
+    );
+  }
+}
+
+function increaseDifficulty() {
+  maxAsteroids += 1;
+  asteroidSpeedMax += 1;
+  maxVolcanos += 1;
+  volcanoSpeedMax += 1;
+  volcanoChance += 1;
+}
+
+function handleDeath(deathCause) {
+  clearInterval(timer);
+
+  switch (deathCause) {
+    case "asteroid":
+      deathMsg = "Asteroids are hard... REALLY hard!";
+      break;
+    case "jupiter":
+      deathMsg = "The floor is LAVA!!!!!";
+      break;
+    case "orbit":
+      deathMsg = "You went to meet the Flying Spaghetti Monster...";
+      break;
+    case "volcano":
+      deathMsg = "Fireballs are pretty, but they burn...";
+      break;
+  }
+  deathScreen = true;
 }
 
 function drawEverything() {
@@ -278,53 +346,6 @@ function drawEverything() {
     // Art
     drawBottomPlanet();
   }
-}
-
-function generateAsteroids() {
-  let randY = rand(0, CANVAS_BOTTOM);
-  let length = rand(0, 40);
-  let asteroid = new Asteroid(
-    canvas.width - ASTEROID_SIZE,
-    rand(0, canvas.height),
-    rand(SPD_MIN, SPD_MAX)
-  );
-
-  asteroids.push(asteroid);
-}
-
-function rollDiceForVolcano() {
-  if (rand(0, 100) > 99 && volcanos.length < maxVolcanos) {
-    console.log("Volcano!");
-    let randX = rand(0, CANVAS_RIGHT);
-    volcanos.push(
-      new Volcano(
-        randX,
-        CANVAS_BOTTOM,
-        rand(0, canvas.height - 200),
-        rand(VOLCANO_SPD_MIN, VOLCANO_SPD_MAX)
-      )
-    );
-  }
-}
-
-function handleDeath(deathCause) {
-  clearInterval(timer);
-
-  switch (deathCause) {
-    case "asteroid":
-      deathMsg = "Asteroids are hard... REALLY hard!";
-      break;
-    case "jupiter":
-      deathMsg = "The floor is LAVA!!!!!";
-      break;
-    case "orbit":
-      deathMsg = "You went to meet the Flying Spaghetti Monster...";
-      break;
-    case "volcano":
-      deathMsg = "Fireballs are pretty, but they burn...";
-      break;
-  }
-  deathScreen = true;
 }
 
 function drawStartScreen() {
@@ -395,7 +416,6 @@ function drawBottomPlanet() {
 }
 
 // CONTROLS
-
 canvas.addEventListener("click", () => {
   if (startScreen) {
     startScreen = false;
@@ -441,11 +461,16 @@ function startGameControls() {
       player.movingRight = false;
     }
   });
+
+  if (DEBUG_MODE) {
+    canvas.addEventListener("mousemove", e => {
+      player.pos.x = e.offsetX;
+      player.pos.y = e.offsetY;
+    });
+  }
 }
 
-/*
-		HELPERS
-*/
+// HELPERS
 function rand(min, max) {
   if (min === undefined) {
     min = 0;

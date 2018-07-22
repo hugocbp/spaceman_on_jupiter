@@ -1,3 +1,11 @@
+/*
+  1045 Final Project - Summer 2018
+
+  Spaceman on Jupiter
+
+  Name: Hugo Carlos Borges Pinto
+  SID: 100311857
+*/
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
@@ -11,7 +19,7 @@ const PLAYER_WIDTH = 64; // double spaceman img
 const CANVAS_BOTTOM = canvas.height;
 const CANVAS_RIGHT = canvas.width;
 const CANVAS_LEFT = 0;
-const DIFFICULTY_INCREASE_INTERVAL = 5000; // in ms
+const DIFFICULTY_TIME = 5000; // in ms
 
 // PHYSICS
 const THRUST_SPEED = 0.3;
@@ -44,7 +52,7 @@ let startScreen = true;
 let deathScreen = false;
 let player;
 let asteroids = [];
-let volcanos = [];
+let volcanoes = [];
 let score = 0;
 let timeInSeconds = 0;
 let deathReason;
@@ -57,7 +65,7 @@ let gameTimeInterval;
 // Difficulty variables
 let maxAsteroids;
 let asteroidSpeedMax;
-let maxVolcanos;
+let maxVolcanoes;
 let volcanoSpeedMax;
 let volcanoChance;
 
@@ -66,7 +74,7 @@ let death = {
   volcano: {
     msg: "Fireballs are pretty, but they burn...",
     color: "crimson",
-    explanation: "Avoid getting close to the fireballs"
+    explanation: "Avoid getting close to the volcano fireballs"
   },
   asteroid: {
     msg: "Asteroids are hard...REALLY hard!",
@@ -128,20 +136,24 @@ class Player {
     // Gravity (DOWN)
     if (this.pos.y <= CANVAS_BOTTOM - PLAYER_HEIGHT && !this.thrusting) {
       ctx.save();
+
       this.currentGravityVelocity += GRAVITY_SPEED;
       this.pos.translate(0, this.currentGravityVelocity);
+
       ctx.restore();
     }
 
     // Thurst (UP)
     if (this.pos.y <= CANVAS_BOTTOM - PLAYER_HEIGHT && this.thrusting) {
       ctx.save();
+
       this.currentThrust += THRUST_SPEED;
       this.pos.translate(0, -this.currentThrust);
+
       ctx.restore();
     }
 
-    // TODO: Refactor lateral movement
+    // TODO: Refactor or redesign lateral movement for lateral momentum?
     // Sides (LEFT & RIGHT)
     if (this.pos.x > 0 && this.pos.x < CANVAS_RIGHT) {
       if (this.movingRight) {
@@ -153,11 +165,12 @@ class Player {
       }
     }
 
+    // Collisions
     if (this.hasCollision(asteroids)) {
       handleDeath("asteroid");
     }
 
-    if (this.hasCollision(volcanos)) {
+    if (this.hasCollision(volcanoes)) {
       handleDeath("volcano");
     }
   }
@@ -168,7 +181,7 @@ class Player {
   }
 
   isColliding(object) {
-    return this.pos.distance(object.pos) < 40;
+    return this.pos.distance(object.pos) < 40; // TODO: Debug collision distances
   }
 
   draw(ctx) {
@@ -194,14 +207,12 @@ class Asteroid {
   }
 
   update() {
+    // TODO: Use Point method
     this.pos.x -= this.dx;
   }
 
   isVisible() {
-    if (this.pos.x < 0) {
-      return false;
-    }
-    return true;
+    return !(this.pos.x < 0);
   }
 
   draw(ctx) {
@@ -214,7 +225,6 @@ class Asteroid {
 }
 
 class Volcano {
-  // constructor(baseX, baseY, topX, topY, maxHeight, speed) {
   constructor(x, y, maxHeight, speed) {
     this.pos = new Point(x, y);
     this.maxHeight = maxHeight;
@@ -222,6 +232,7 @@ class Volcano {
   }
 
   update() {
+    // TODO: Use Point method
     if (this.pos.y < CANVAS_BOTTOM - this.maxHeight) {
       this.speed.y *= -1;
     }
@@ -254,10 +265,10 @@ function initGame() {
   score = 0;
   maxAsteroids = 3;
   asteroidSpeedMax = 5;
-  maxVolcanos = 3;
+  maxVolcanoes = 3;
   volcanoSpeedMax = 4;
   volcanoChance = 2;
-  volcanos = [];
+  volcanoes = [];
   asteroids = [];
 
   // Clear main timers & intervals to allow "Play again" after death
@@ -266,26 +277,22 @@ function initGame() {
   clearInterval(gameTimeInterval);
 
   // Setup new game
-  player = new Player(50, CANVAS_BOTTOM / 2);
+  player = new Player(50, CANVAS_BOTTOM / 2 - 200);
+
   startGameControls();
 
   gameInterval = setInterval(tick, 1000 / FPS);
-
-  difficultyInterval = setInterval(
-    increaseDifficulty,
-    DIFFICULTY_INCREASE_INTERVAL
-  );
-
+  difficultyInterval = setInterval(increaseDifficulty, DIFFICULTY_TIME);
   gameTimeInterval = setInterval(() => (timeInSeconds += 1), 1000);
 }
 
 // TODO: Remove?
 function tick() {
-  update();
+  updateEverything();
   drawEverything();
 }
 
-function update() {
+function updateEverything() {
   // Moving BG code: http://jsfiddle.net/AbdiasSoftware/zupjZ/
   bgPos -= 0.5;
   canvas.style.backgroundPosition = bgPos + "px -30px, " + bgPos + "px -30px";
@@ -296,8 +303,8 @@ function update() {
     generateAsteroids();
   }
 
-  if (volcanos.length <= maxVolcanos) {
-    generateVolcanos();
+  if (volcanoes.length <= maxVolcanoes) {
+    generateVolcanoes();
   }
 
   player.update();
@@ -308,8 +315,8 @@ function update() {
   asteroids.forEach(asteroid => asteroid.update());
   asteroids = asteroids.filter(asteroid => asteroid.isVisible());
 
-  volcanos.forEach(volcano => volcano.update());
-  volcanos = volcanos.filter(volcano => volcano.isVisible());
+  volcanoes.forEach(volcano => volcano.update());
+  volcanoes = volcanoes.filter(volcano => volcano.isVisible());
 
   // Update score
   score += initialAsteroids - asteroids.length;
@@ -325,11 +332,11 @@ function generateAsteroids() {
   );
 }
 
-function generateVolcanos() {
+function generateVolcanoes() {
   // Adds chance to Volcano spawn
   if (rand(0, 100) > 100 - volcanoChance) {
     let randX = rand(0, CANVAS_RIGHT);
-    volcanos.push(
+    volcanoes.push(
       new Volcano(
         randX,
         CANVAS_BOTTOM,
@@ -343,7 +350,7 @@ function generateVolcanos() {
 function increaseDifficulty() {
   maxAsteroids += 1;
   asteroidSpeedMax += 1;
-  maxVolcanos += 1;
+  maxVolcanoes += 1;
   volcanoSpeedMax += 1;
   volcanoChance += 1;
 }
@@ -364,15 +371,15 @@ function drawEverything() {
   } else if (deathScreen) {
     drawDeathScreen();
   } else {
-    // UI
+    // Game UI
     drawGameUI();
 
     // Game Objects
     player.draw(ctx);
     asteroids.forEach(asteroid => asteroid.draw(ctx));
-    volcanos.forEach(volcano => volcano.draw(ctx));
+    volcanoes.forEach(volcano => volcano.draw(ctx));
 
-    // Art
+    // Game Art
     drawBottomPlanet();
   }
 }
@@ -382,9 +389,13 @@ function drawStartScreen() {
 
   ctx.textAlign = "center";
   ctx.fillStyle = "orange";
-  ctx.font = "bold 80px Orbitron";
+  ctx.font = "bold 90px Orbitron";
   // TODO: Create CANVAS_CENTRE_X ?
-  ctx.fillText("Spaceman on Jupiter", canvas.width / 2, canvas.height / 2 - 50);
+  ctx.fillText(
+    "Spaceman on Jupiter",
+    canvas.width / 2,
+    canvas.height / 2 - 100
+  );
 
   ctx.fillStyle = textColor;
   ctx.font = "40px Orbitron";

@@ -309,13 +309,12 @@ function generateAsteroids() {
 
 function generateVolcanos() {
   if (rand(0, 100) > 100 - volcanoChance) {
-    console.log("Volcano!");
     let randX = rand(0, CANVAS_RIGHT);
     volcanos.push(
       new Volcano(
         randX,
         CANVAS_BOTTOM,
-        rand(0, canvas.height - 200),
+        rand(0, canvas.height),
         rand(VOLCANO_SPD_MIN, volcanoSpeedMax)
       )
     );

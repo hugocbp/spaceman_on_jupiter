@@ -155,8 +155,8 @@ class Player {
       ctx.restore();
     }
 
-    // TODO: Refactor or redesign lateral movement for lateral momentum?
     // Sides (LEFT & RIGHT)
+    // TODO: Refactor or redesign lateral movement for lateral momentum?
     // TODO: Fix move right out of canvas bug
     if (this.movingRight && this.pos.x < CANVAS_RIGHT - LATERAL_MOVEMENT) {
       this.pos.x += LATERAL_MOVEMENT;
@@ -313,8 +313,8 @@ function updateEverything() {
 function generateAsteroids() {
   asteroids.push(
     new Asteroid(
-      canvas.width - ASTEROID_SIZE,
-      rand(0, CANVAS_BOTTOM),
+      CANVAS_RIGHT - ASTEROID_SIZE,
+      rand(CANVAS_TOP, CANVAS_BOTTOM),
       rand(ASTEROID_SPD_MIN, asteroidSpeedMax)
     )
   );
@@ -323,12 +323,12 @@ function generateAsteroids() {
 function generateVolcanoes() {
   // Adds chance to Volcano spawn
   if (rand(0, 100) > 100 - volcanoChance) {
-    let randX = rand(0, CANVAS_RIGHT);
+    let randX = rand(CANVAS_LEFT, CANVAS_RIGHT);
     volcanoes.push(
       new Volcano(
         randX,
         CANVAS_BOTTOM,
-        rand(0, CANVAS_BOTTOM),
+        rand(CANVAS_TOP, CANVAS_BOTTOM),
         rand(VOLCANO_SPD_MIN, volcanoSpeedMax)
       )
     );
@@ -344,6 +344,8 @@ function increaseDifficulty() {
 }
 
 function handleDeath(deathCause) {
+  // Prevents time from increaseing after death
+  // TODO: Save on another variable deathTime?
   clearInterval(gameTimeInterval);
 
   deathReason = deathCause;
@@ -351,7 +353,7 @@ function handleDeath(deathCause) {
 }
 
 function drawEverything() {
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "black"; // TODO: Remove?
   ctx.clearRect(0, 0, canvas.width, CANVAS_BOTTOM);
 
   if (startScreen) {

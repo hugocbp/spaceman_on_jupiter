@@ -2,7 +2,7 @@ let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
 // Player position is controlled by mouse position in DEBUG_MODE
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 const FPS = 60;
 const PLAYER_HEIGHT = 104; // double spaceman img
@@ -10,9 +10,9 @@ const PLAYER_WIDTH = 64; // double spaceman img
 const CANVAS_BOTTOM = canvas.height;
 const CANVAS_RIGHT = canvas.width;
 const CANVAS_LEFT = 0;
-const THRUST_SPEED = 0.2;
-const GRAVITY_SPEED = 0.06;
-const LATERAL_MOVEMENT = 1;
+const THRUST_SPEED = 0.3;
+const GRAVITY_SPEED = 0.08;
+const LATERAL_MOVEMENT = 2;
 
 // ASTEROIDS
 // Scrolling Asteroids - akw: 1045 Lab 11 - Summer 2018
@@ -150,7 +150,7 @@ class Player {
   }
 
   isColliding(object) {
-    return this.pos.distance(object.pos) < ASTEROID_SIZE;
+    return this.pos.distance(object.pos) < 40;
   }
 
   draw(ctx) {
@@ -237,6 +237,8 @@ function initGame() {
   maxVolcanos = 3;
   volcanoSpeedMax = 4;
   volcanoChance = 2;
+  volcanos = [];
+  asteroids = [];
 
   // Required to allow "Play again"
   clearInterval(gameLoop);

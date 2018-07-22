@@ -242,27 +242,26 @@ function initGame() {
   volcanos = [];
   asteroids = [];
 
-  // Required to allow "Play again" after death
+  // Clear main timers & intervals to allow "Play again" after death
   clearInterval(gameLoop);
   clearInterval(difficultyTimer);
   clearInterval(timer);
 
+  // Setup new game
   player = new Player(50, CANVAS_BOTTOM / 2);
   startGameControls();
 
-  // Game Loop
   gameLoop = setInterval(tick, 1000 / FPS);
 
-  // Difficulty timer
   difficultyTimer = setInterval(
     increaseDifficulty,
     DIFFICULTY_INCREASE_INTERVAL
   );
 
-  // Game Time
   timer = setInterval(() => (timeInSeconds += 1), 1000);
 }
 
+// TODO: Remove?
 function tick() {
   update();
   drawEverything();
@@ -285,6 +284,7 @@ function update() {
 
   player.update();
 
+  // For Score - TODO: Rethink score?
   let initialAsteroids = asteroids.length;
 
   asteroids.forEach(asteroid => asteroid.update());
@@ -333,6 +333,7 @@ function increaseDifficulty() {
 function handleDeath(deathCause) {
   clearInterval(timer);
 
+  // TODO: Swap for Map?
   switch (deathCause) {
     case "asteroid":
       deathMsg = "Asteroids are hard... REALLY hard!";
@@ -382,6 +383,7 @@ function drawStartScreen() {
   ctx.textAlign = "center";
   ctx.fillStyle = "orange";
   ctx.font = "bold 80px Orbitron";
+  // TODO: Create CANVAS_CENTRE_X ?
   ctx.fillText("Spaceman on Jupiter", canvas.width / 2, canvas.height / 2 - 50);
 
   ctx.fillStyle = textColor;

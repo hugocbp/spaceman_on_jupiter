@@ -36,12 +36,15 @@ SPACEMAN_IMG.src = "images/spaceman.png";
 
 // Game variables
 let startScreen = true;
+let deathScreen = false;
 let player;
 let asteroids = [];
 let volcanos = [];
 let maxVolcanos = 3;
 let score = 0;
 let timeInSeconds = 0;
+let deathReason = "Don't die!";
+let timer;
 
 // Point Class - akw: 1045 Assignment 11 - Summer 2018
 class Point {
@@ -74,12 +77,11 @@ class Player {
 
   update() {
     if (this.pos.y <= 0) {
-      this.pos.y = 0;
+      handleDeath("orbit");
     }
 
     if (this.pos.y >= CANVAS_BOTTOM - PLAYER_HEIGHT) {
-      this.pos.y = CANVAS_BOTTOM - PLAYER_HEIGHT;
-      this.currentGravityVelocity = 0;
+      handleDeath("jupiter");
     }
 
     // Gravity
@@ -110,8 +112,11 @@ class Player {
     }
 
     if (this.hasCollision(asteroids)) {
-      // TODO: Implement loss of life
-      // score -= 5;
+      handleDeath("asteroid");
+    }
+
+    if (this.hasCollision(volcanos)) {
+      handleDeath("volcano");
     }
   }
 
@@ -210,11 +215,11 @@ drawEverything(); // Start screen
 
 function initGame() {
   player = new Player(50, CANVAS_BOTTOM / 2);
-
+  startGameControls();
   setInterval(tick, 1000 / FPS);
 
   // Game Time
-  setInterval(() => {
+  timer = setInterval(() => {
     timeInSeconds += 1;
   }, 1000);
 }
@@ -229,6 +234,9 @@ function update() {
   bgPos -= 0.5;
   canvas.style.backgroundPosition = bgPos + "px -30px, " + bgPos + "px -30px";
 
+  if (deathScreen) return;
+
+  // TODO: Refactor for difficulty
   if (asteroids.length <= 5) {
     generateAsteroids();
   }
@@ -255,6 +263,8 @@ function drawEverything() {
 
   if (startScreen) {
     drawStartScreen();
+  } else if (deathScreen) {
+    drawDeathScreen();
   } else {
     // UI
     drawGameUI();
@@ -296,6 +306,28 @@ function rollDiceForVolcano() {
   }
 }
 
+function handleDeath(deathType) {
+  clearInterval(timer);
+
+  switch (deathType) {
+    case "asteroid":
+      deathReason = "Asteroids are hard... Like, REALLY hard!";
+      break;
+    case "jupiter":
+      deathReason = "The floor is LAVA!!!!!";
+      break;
+    case "orbit":
+      deathReason = "You went to meet the Flying Spaghetti Monster...";
+      break;
+    case "volcano":
+      deathReason = "Fireballs are pretty, but they burn...";
+      break;
+    default:
+      break;
+  }
+  deathScreen = true;
+}
+
 function drawStartScreen() {
   ctx.save();
 
@@ -318,6 +350,30 @@ function drawStartScreen() {
   ctx.restore();
 }
 
+function drawDeathScreen() {
+  ctx.save();
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "red";
+  ctx.font = "bold 80px Orbitron";
+  ctx.fillText("You died!!", canvas.width / 2, canvas.height / 2 - 50);
+
+  ctx.fillStyle = "orange";
+  ctx.font = "40px Orbitron";
+  ctx.fillText(deathReason, canvas.width / 2, canvas.height - 300);
+
+  ctx.font = "30px Orbitron";
+  ctx.fillText("Score: " + score, canvas.width / 2, canvas.height - 200);
+
+  ctx.fillText(
+    "Time: " + timeInSeconds + " second(s)",
+    canvas.width / 2,
+    canvas.height - 150
+  );
+
+  ctx.restore();
+}
+
 function drawGameUI() {
   ctx.fillStyle = TEXT_COLOR;
   ctx.font = "bold 30px Orbitron";
@@ -325,9 +381,6 @@ function drawGameUI() {
 
   ctx.font = "bold 30px Orbitron";
   ctx.fillText("Time:" + timeInSeconds, 5, 60);
-
-  ctx.font = "bold 30px Orbitron";
-  ctx.fillText("Lives:" + 0, 5, 90);
 }
 
 function drawBottomPlanet() {
@@ -343,43 +396,6 @@ function drawBottomPlanet() {
 }
 
 // CONTROLS
-window.addEventListener("keydown", e => {
-  if (e.key === "ArrowUp") {
-    player.currentGravityVelocity = 0;
-    player.thrusting = true;
-  }
-});
-
-window.addEventListener("keyup", e => {
-  if (e.key === "ArrowUp") {
-    player.thrusting = false;
-    player.currentThrust = 0;
-  }
-});
-
-window.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft") {
-    player.movingLeft = true;
-  }
-});
-
-window.addEventListener("keyup", e => {
-  if (e.key === "ArrowLeft") {
-    player.movingLeft = false;
-  }
-});
-
-window.addEventListener("keydown", e => {
-  if (e.key === "ArrowRight") {
-    player.movingRight = true;
-  }
-});
-
-window.addEventListener("keyup", e => {
-  if (e.key === "ArrowRight") {
-    player.movingRight = false;
-  }
-});
 
 canvas.addEventListener("click", () => {
   if (startScreen) {
@@ -387,6 +403,46 @@ canvas.addEventListener("click", () => {
     initGame();
   }
 });
+
+function startGameControls() {
+  window.addEventListener("keydown", e => {
+    if (e.key === "ArrowUp") {
+      player.currentGravityVelocity = 0;
+      player.thrusting = true;
+    }
+  });
+
+  window.addEventListener("keyup", e => {
+    if (e.key === "ArrowUp") {
+      player.thrusting = false;
+      player.currentThrust = 0;
+    }
+  });
+
+  window.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") {
+      player.movingLeft = true;
+    }
+  });
+
+  window.addEventListener("keyup", e => {
+    if (e.key === "ArrowLeft") {
+      player.movingLeft = false;
+    }
+  });
+
+  window.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") {
+      player.movingRight = true;
+    }
+  });
+
+  window.addEventListener("keyup", e => {
+    if (e.key === "ArrowRight") {
+      player.movingRight = false;
+    }
+  });
+}
 
 /*
 		HELPERS

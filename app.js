@@ -121,25 +121,22 @@ class Point {
 class Player {
   constructor(x, y) {
     this.pos = new Point(x, y);
+    this.movingLeft = false;
+    this.movingRight = false;
     this.thrusting = false;
     this.currentThrust = 0;
     this.currentGravityVelocity = GRAVITY_SPEED;
-
-    this.movingLeft = false;
-    this.movingRight = false;
   }
 
   update() {
-    if (this.pos.y <= CANVAS_TOP) {
-      handleDeath("orbit");
-    }
-
-    if (this.pos.y >= CANVAS_BOTTOM - PLAYER_HEIGHT) {
-      handleDeath("jupiter");
-    }
+    // Check death conditions
+    if (this.pos.y <= CANVAS_TOP) handleDeath("orbit");
+    if (this.pos.y >= CANVAS_BOTTOM - PLAYER_HEIGHT) handleDeath("jupiter");
+    if (this.hasCollision(asteroids)) handleDeath("asteroid");
+    if (this.hasCollision(volcanoes)) handleDeath("volcano");
 
     // Gravity (DOWN)
-    if (this.pos.y <= CANVAS_BOTTOM - PLAYER_HEIGHT && !this.thrusting) {
+    if (!this.thrusting && this.pos.y <= CANVAS_BOTTOM - PLAYER_HEIGHT) {
       ctx.save();
 
       this.currentGravityVelocity += GRAVITY_SPEED;
@@ -149,7 +146,7 @@ class Player {
     }
 
     // Thurst (UP)
-    if (this.pos.y <= CANVAS_BOTTOM - PLAYER_HEIGHT && this.thrusting) {
+    if (this.thrusting && this.pos.y <= CANVAS_BOTTOM - PLAYER_HEIGHT) {
       ctx.save();
 
       this.currentThrust += THRUST_SPEED;
@@ -168,10 +165,6 @@ class Player {
     if (this.movingLeft && this.pos.x > CANVAS_LEFT + LATERAL_MOVEMENT) {
       this.pos.x -= LATERAL_MOVEMENT;
     }
-
-    // Collisions
-    if (this.hasCollision(asteroids)) handleDeath("asteroid");
-    if (this.hasCollision(volcanoes)) handleDeath("volcano");
   }
 
   // Collision logic - akn: 1045 Assignment 11 - Summer 2018

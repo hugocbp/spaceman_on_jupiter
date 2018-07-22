@@ -7,20 +7,21 @@ const DEBUG_MODE = false;
 const FPS = 60;
 const PLAYER_HEIGHT = 104; // double spaceman img
 const PLAYER_WIDTH = 64; // double spaceman img
-const CANVAS_BOTTOM = canvas.height;
+const CANVAS_BOTTOM = canvas.height; // TODO: Rename canvas consts?
 const CANVAS_RIGHT = canvas.width;
 const CANVAS_LEFT = 0;
+const DIFFICULTY_INCREASE_INTERVAL = 5000; // in ms
+
+// PHYSICS
 const THRUST_SPEED = 0.3;
 const GRAVITY_SPEED = 0.08;
 const LATERAL_MOVEMENT = 2;
 
-// ASTEROIDS
-// Scrolling Asteroids - akw: 1045 Lab 11 - Summer 2018
+// OBSTACLES
+// Scrolling Asteroids & Volcano - akw: 1045 Lab 11 - Summer 2018
 const ASTEROIDS_PER_SEC = 2;
 const ASTEROID_SIZE = 20;
 const ASTEROID_SPD_MIN = 1;
-
-// VOLCANO
 const VOLCANO_SPD_MIN = 2;
 
 // ART
@@ -45,7 +46,7 @@ let asteroids = [];
 let volcanos = [];
 let score = 0;
 let timeInSeconds = 0;
-let deathMsg = "Don't die!";
+let deathMsg;
 
 // Intervals & Timers
 let gameLoop;
@@ -230,7 +231,7 @@ class Volcano {
 drawStartScreen();
 
 function initGame() {
-  // Reset variables
+  // Start/Reset main variables
   timeInSeconds = 0;
   score = 0;
   maxAsteroids = 3;
@@ -241,7 +242,7 @@ function initGame() {
   volcanos = [];
   asteroids = [];
 
-  // Required to allow "Play again"
+  // Required to allow "Play again" after death
   clearInterval(gameLoop);
   clearInterval(difficultyTimer);
   clearInterval(timer);
@@ -253,12 +254,13 @@ function initGame() {
   gameLoop = setInterval(tick, 1000 / FPS);
 
   // Difficulty timer
-  difficultyTimer = setInterval(increaseDifficulty, 5000);
+  difficultyTimer = setInterval(
+    increaseDifficulty,
+    DIFFICULTY_INCREASE_INTERVAL
+  );
 
   // Game Time
-  timer = setInterval(() => {
-    timeInSeconds += 1;
-  }, 1000);
+  timer = setInterval(() => (timeInSeconds += 1), 1000);
 }
 
 function tick() {
@@ -296,18 +298,17 @@ function update() {
 }
 
 function generateAsteroids() {
-  let randY = rand(0, CANVAS_BOTTOM);
-  let length = rand(0, 40);
-  let asteroid = new Asteroid(
-    canvas.width - ASTEROID_SIZE,
-    rand(0, canvas.height),
-    rand(ASTEROID_SPD_MIN, asteroidSpeedMax)
+  asteroids.push(
+    new Asteroid(
+      canvas.width - ASTEROID_SIZE,
+      rand(0, canvas.height),
+      rand(ASTEROID_SPD_MIN, asteroidSpeedMax)
+    )
   );
-
-  asteroids.push(asteroid);
 }
 
 function generateVolcanos() {
+  // Adds chance to Volcano spawn
   if (rand(0, 100) > 100 - volcanoChance) {
     let randX = rand(0, CANVAS_RIGHT);
     volcanos.push(
@@ -384,12 +385,14 @@ function drawStartScreen() {
   ctx.fillText("Spaceman on Jupiter", canvas.width / 2, canvas.height / 2 - 50);
 
   ctx.fillStyle = textColor;
-  ctx.font = "30px Orbitron";
+  ctx.font = "40px Orbitron";
   ctx.fillText(
-    "CONTROLS: UP to use thrust, LEFT and RIGHT to move",
+    "CONTROLS: UP to thrust, LEFT and RIGHT to move",
     canvas.width / 2,
-    canvas.height - 200
+    canvas.height - 300
   );
+
+  ctx.fillText("OBJECTIVE: Don't die", canvas.width / 2, canvas.height - 220);
 
   ctx.font = "30px Orbitron";
   ctx.fillText("Click to Start", canvas.width / 2, canvas.height - 50);

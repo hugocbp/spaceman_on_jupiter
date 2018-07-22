@@ -34,6 +34,8 @@ const VOLCANO_DOWN_IMG = new Image();
 VOLCANO_DOWN_IMG.src = "images/fireball_down.png";
 const SPACEMAN_IMG = new Image();
 SPACEMAN_IMG.src = "images/spaceman.png";
+const SPACEMAN_THRUSTING_IMG = new Image();
+SPACEMAN_THRUSTING_IMG.src = "images/spaceman_thrusting.png";
 
 // Game variables
 let startScreen = true;
@@ -156,10 +158,9 @@ class Player {
   draw(ctx) {
     ctx.save();
 
-    // ctx.fillStyle = "white";
-    // ctx.fillRect(this.pos.x, this.pos.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+    let playerImg = this.thrusting ? SPACEMAN_THRUSTING_IMG : SPACEMAN_IMG;
     ctx.drawImage(
-      SPACEMAN_IMG,
+      playerImg,
       this.pos.x,
       this.pos.y,
       PLAYER_WIDTH,

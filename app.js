@@ -300,18 +300,19 @@ function drawStartScreen() {
   ctx.save();
 
   ctx.textAlign = "center";
-  ctx.fillStyle = TEXT_COLOR;
-  ctx.font = "bold 100px sans-serif";
+  ctx.fillStyle = "orange";
+  ctx.font = "bold 80px Orbitron";
   ctx.fillText("Spaceman on Jupiter", canvas.width / 2, canvas.height / 2 - 50);
 
-  ctx.font = "30px sans-serif";
+  ctx.fillStyle = TEXT_COLOR;
+  ctx.font = "30px Orbitron";
   ctx.fillText(
     "CONTROLS: UP to use thrust, LEFT and RIGHT to move",
     canvas.width / 2,
     canvas.height - 200
   );
 
-  ctx.font = "30px sans-serif";
+  ctx.font = "30px Orbitron";
   ctx.fillText("Click to Start", canvas.width / 2, canvas.height - 50);
 
   ctx.restore();
@@ -319,13 +320,13 @@ function drawStartScreen() {
 
 function drawGameUI() {
   ctx.fillStyle = TEXT_COLOR;
-  ctx.font = "bold 30px sans-serif";
+  ctx.font = "bold 30px Orbitron";
   ctx.fillText("Score:" + score, 5, 30);
 
-  ctx.font = "bold 30px sans-serif";
+  ctx.font = "bold 30px Orbitron";
   ctx.fillText("Time:" + timeInSeconds, 5, 60);
 
-  ctx.font = "bold 30px sans-serif";
+  ctx.font = "bold 30px Orbitron";
   ctx.fillText("Lives:" + 0, 5, 90);
 }
 

@@ -43,7 +43,7 @@ let volcanos = [];
 let maxVolcanos = 3;
 let score = 0;
 let timeInSeconds = 0;
-let deathReason = "Don't die!";
+let deathMsg = "Don't die!";
 let timer;
 
 // Point Class - akw: 1045 Assignment 11 - Summer 2018
@@ -216,6 +216,7 @@ drawEverything(); // Start screen
 function initGame() {
   player = new Player(50, CANVAS_BOTTOM / 2);
   startGameControls();
+
   setInterval(tick, 1000 / FPS);
 
   // Game Time
@@ -306,23 +307,21 @@ function rollDiceForVolcano() {
   }
 }
 
-function handleDeath(deathType) {
+function handleDeath(deathCause) {
   clearInterval(timer);
 
-  switch (deathType) {
+  switch (deathCause) {
     case "asteroid":
-      deathReason = "Asteroids are hard... Like, REALLY hard!";
+      deathMsg = "Asteroids are hard... REALLY hard!";
       break;
     case "jupiter":
-      deathReason = "The floor is LAVA!!!!!";
+      deathMsg = "The floor is LAVA!!!!!";
       break;
     case "orbit":
-      deathReason = "You went to meet the Flying Spaghetti Monster...";
+      deathMsg = "You went to meet the Flying Spaghetti Monster...";
       break;
     case "volcano":
-      deathReason = "Fireballs are pretty, but they burn...";
-      break;
-    default:
+      deathMsg = "Fireballs are pretty, but they burn...";
       break;
   }
   deathScreen = true;
@@ -355,12 +354,12 @@ function drawDeathScreen() {
 
   ctx.textAlign = "center";
   ctx.fillStyle = "red";
-  ctx.font = "bold 80px Orbitron";
-  ctx.fillText("You died!!", canvas.width / 2, canvas.height / 2 - 50);
+  ctx.font = "bold 100px Orbitron";
+  ctx.fillText("You died", canvas.width / 2, canvas.height / 2 - 200);
 
   ctx.fillStyle = "orange";
   ctx.font = "40px Orbitron";
-  ctx.fillText(deathReason, canvas.width / 2, canvas.height - 300);
+  ctx.fillText(deathMsg, canvas.width / 2, canvas.height - 400);
 
   ctx.font = "30px Orbitron";
   ctx.fillText("Score: " + score, canvas.width / 2, canvas.height - 200);

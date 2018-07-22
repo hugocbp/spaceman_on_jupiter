@@ -2,12 +2,13 @@ let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
 // Player position is controlled by mouse position in DEBUG_MODE
+// and gravity & thurst are bypassed
 const DEBUG_MODE = false;
 
 const FPS = 60;
 const PLAYER_HEIGHT = 104; // double spaceman img
 const PLAYER_WIDTH = 64; // double spaceman img
-const CANVAS_BOTTOM = canvas.height; // TODO: Rename canvas consts?
+const CANVAS_BOTTOM = canvas.height;
 const CANVAS_RIGHT = canvas.width;
 const CANVAS_LEFT = 0;
 const DIFFICULTY_INCREASE_INTERVAL = 5000; // in ms
@@ -18,7 +19,7 @@ const GRAVITY_SPEED = 0.08;
 const LATERAL_MOVEMENT = 2;
 
 // OBSTACLES
-// Scrolling Asteroids & Volcano - akw: 1045 Lab 11 - Summer 2018
+// Scrolling Asteroids & Volcano - akn: 1045 Lab 11 - Summer 2018
 const ASTEROIDS_PER_SEC = 2;
 const ASTEROID_SIZE = 20;
 const ASTEROID_SPD_MIN = 1;
@@ -46,12 +47,12 @@ let asteroids = [];
 let volcanos = [];
 let score = 0;
 let timeInSeconds = 0;
-let deathMsg;
+let deathReason;
 
 // Intervals & Timers
-let gameLoop;
-let difficultyTimer;
-let timer;
+let gameInterval;
+let difficultyInterval;
+let gameTimeInterval;
 
 // Difficulty variables
 let maxAsteroids;
@@ -60,7 +61,31 @@ let maxVolcanos;
 let volcanoSpeedMax;
 let volcanoChance;
 
-// Point Class - akw: 1045 Assignment 11 - Summer 2018
+// Death Messages
+let death = {
+  volcano: {
+    msg: "Fireballs are pretty, but they burn...",
+    color: "crimson",
+    explanation: "Avoid getting close to the fireballs"
+  },
+  asteroid: {
+    msg: "Asteroids are hard...REALLY hard!",
+    color: "lightgray",
+    explanation: "Avoid getting hit by asteroids"
+  },
+  jupiter: {
+    msg: "The floor is LAVA!!!!!",
+    color: "orange",
+    explanation: "Don't touch the lava"
+  },
+  orbit: {
+    msg: "You found the Flying Spaghetti Monster...",
+    color: "lightskyblue",
+    explanation: "Don't leave orbit"
+  }
+};
+
+// Point Class - akn: 1045 Assignment 11 - Summer 2018
 class Point {
   constructor(x, y) {
     this.x = x;
@@ -137,17 +162,7 @@ class Player {
     }
   }
 
-  // TODO: Refactor lateral movement
-  moveForward() {
-    this.pos.x += 10;
-  }
-
-  // TODO: Refactor lateral movement
-  moveBackward() {
-    this.pos.x -= 10;
-  }
-
-  // Collision logic - akw: 1045 Assignment 11 - Summer 2018
+  // Collision logic - akn: 1045 Assignment 11 - Summer 2018
   hasCollision(objects) {
     return objects.some(object => this.isColliding(object));
   }
@@ -177,15 +192,18 @@ class Asteroid {
     this.pos = new Point(x, y);
     this.dx = dx;
   }
+
   update() {
     this.pos.x -= this.dx;
   }
+
   isVisible() {
     if (this.pos.x < 0) {
       return false;
     }
     return true;
   }
+
   draw(ctx) {
     ctx.save();
 
@@ -243,22 +261,22 @@ function initGame() {
   asteroids = [];
 
   // Clear main timers & intervals to allow "Play again" after death
-  clearInterval(gameLoop);
-  clearInterval(difficultyTimer);
-  clearInterval(timer);
+  clearInterval(gameInterval);
+  clearInterval(difficultyInterval);
+  clearInterval(gameTimeInterval);
 
   // Setup new game
   player = new Player(50, CANVAS_BOTTOM / 2);
   startGameControls();
 
-  gameLoop = setInterval(tick, 1000 / FPS);
+  gameInterval = setInterval(tick, 1000 / FPS);
 
-  difficultyTimer = setInterval(
+  difficultyInterval = setInterval(
     increaseDifficulty,
     DIFFICULTY_INCREASE_INTERVAL
   );
 
-  timer = setInterval(() => (timeInSeconds += 1), 1000);
+  gameTimeInterval = setInterval(() => (timeInSeconds += 1), 1000);
 }
 
 // TODO: Remove?
@@ -331,27 +349,9 @@ function increaseDifficulty() {
 }
 
 function handleDeath(deathCause) {
-  clearInterval(timer);
+  clearInterval(gameTimeInterval);
 
-  // TODO: Swap for Map?
-  switch (deathCause) {
-    case "asteroid":
-      deathMsg = "Asteroids are hard... REALLY hard!";
-      textColor = "lightgray";
-      break;
-    case "jupiter":
-      deathMsg = "The floor is LAVA!!!!!";
-      textColor = "orange";
-      break;
-    case "orbit":
-      deathMsg = "You found the Flying Spaghetti Monster...";
-      textColor = "lightskyblue";
-      break;
-    case "volcano":
-      deathMsg = "Fireballs are pretty, but they burn...";
-      textColor = "red";
-      break;
-  }
+  deathReason = deathCause;
   deathScreen = true;
 }
 
@@ -407,24 +407,30 @@ function drawDeathScreen() {
 
   ctx.textAlign = "center";
 
-  ctx.fillStyle = textColor;
+  ctx.fillStyle = death[deathReason].color;
   ctx.font = "50px Orbitron";
-  ctx.fillText(deathMsg, canvas.width / 2, canvas.height - 500);
+  ctx.fillText(death[deathReason].msg, canvas.width / 2, canvas.height - 450);
 
   ctx.font = "30px Orbitron";
-  ctx.fillText("Score: " + score, canvas.width / 2, canvas.height - 400);
+  ctx.fillText("Score: " + score, canvas.width / 2, canvas.height - 300);
 
   ctx.fillText(
     "Time: " + timeInSeconds + " second(s)",
     canvas.width / 2,
-    canvas.height - 350
+    canvas.height - 250
+  );
+
+  ctx.fillText(
+    death[deathReason].explanation,
+    canvas.width / 2,
+    canvas.height - 100
   );
 
   ctx.font = "30px Orbitron";
   ctx.fillText("Click to play again", canvas.width / 2, canvas.height - 50);
 
   ctx.fillStyle = "red";
-  ctx.font = "bold 120px Orbitron";
+  ctx.font = "bold 200px Orbitron";
   ctx.fillText("You died", canvas.width / 2, canvas.height / 2 - 200);
 
   ctx.restore();

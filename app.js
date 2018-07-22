@@ -27,6 +27,10 @@ const VOLCANO_SPD_MAX = 4;
 let bgPos = 30;
 const ASTEROID_IMG = new Image();
 ASTEROID_IMG.src = "images/asteroid_small.png";
+const VOLCANO_UP_IMG = new Image();
+VOLCANO_UP_IMG.src = "images/fireball.png";
+const VOLCANO_DOWN_IMG = new Image();
+VOLCANO_DOWN_IMG.src = "images/fireball_down.png";
 const SPACEMAN_IMG = new Image();
 SPACEMAN_IMG.src = "images/spaceman.png";
 
@@ -170,35 +174,33 @@ class Asteroid {
 }
 
 class Volcano {
-  constructor(baseX, baseY, topX, topY, maxHeight, speed) {
-    this.base = new Point(baseX, baseY);
-    this.top = new Point(topX, topY);
+  // constructor(baseX, baseY, topX, topY, maxHeight, speed) {
+  constructor(x, y, maxHeight, speed) {
+    this.pos = new Point(x, y);
     this.maxHeight = maxHeight;
     this.speed = new Point(0, speed);
   }
 
   update() {
-    if (this.top.y < CANVAS_BOTTOM - this.maxHeight) {
+    if (this.pos.y < CANVAS_BOTTOM - this.maxHeight) {
       this.speed.y *= -1;
     }
 
-    this.top.y -= this.speed.y;
+    this.pos.y -= this.speed.y;
   }
 
   isVisible() {
-    return this.top.y <= CANVAS_BOTTOM;
+    return this.pos.y <= CANVAS_BOTTOM;
   }
 
   draw(ctx) {
     ctx.save();
 
-    ctx.strokeStyle = "orange";
-    ctx.lineWidth = 50;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(this.base.x, this.base.y);
-    ctx.lineTo(this.top.x, this.top.y);
-    ctx.stroke();
+    if (this.speed.y > 0) {
+      ctx.drawImage(VOLCANO_UP_IMG, this.pos.x, this.pos.y);
+    } else {
+      ctx.drawImage(VOLCANO_DOWN_IMG, this.pos.x, this.pos.y);
+    }
 
     ctx.restore();
   }
@@ -285,8 +287,6 @@ function rollDiceForVolcano() {
     let randX = rand(0, CANVAS_RIGHT);
     volcanos.push(
       new Volcano(
-        randX,
-        CANVAS_BOTTOM,
         randX,
         CANVAS_BOTTOM,
         rand(0, canvas.height - 200),

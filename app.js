@@ -257,7 +257,8 @@ class Volcano {
   }
 }
 
-drawStartScreen();
+// Wait for images and font
+window.onload = () => drawStartScreen();
 
 function initGame() {
   // Start/Reset main variables

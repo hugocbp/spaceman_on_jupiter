@@ -15,7 +15,7 @@ let ctx = canvas.getContext("2d");
 // and gravity & thurst are bypassed
 const DEBUG_MODE = false;
 
-const FPS = 60;
+const FPS = 30;
 const PLAYER_HEIGHT = 104; // double spaceman img
 const PLAYER_WIDTH = 64; // double spaceman img
 const CANVAS_BOTTOM = canvas.height;
@@ -27,16 +27,16 @@ const CANVAS_CENTRE_Y = canvas.height / 2;
 const DIFFICULTY_TIME = 5000; // in ms
 
 // PHYSICS
-const THRUST_SPEED = 0.3;
-const GRAVITY_SPEED = 0.08;
-const LATERAL_MOVEMENT = 2;
+const THRUST_SPEED = 0.6;
+const GRAVITY_SPEED = 0.2;
+const LATERAL_MOVEMENT = 4;
 
 // OBSTACLES
 // Scrolling Asteroids & Volcano - akn: 1045 Lab 11 - Summer 2018
 const ASTEROIDS_PER_SEC = 2;
 const ASTEROID_SIZE = 20;
-const ASTEROID_SPD_MIN = 1;
-const VOLCANO_SPD_MIN = 2;
+const ASTEROID_SPD_MIN = 2;
+const VOLCANO_SPD_MIN = 4;
 
 // ART
 let bgPos = 30;
@@ -258,9 +258,9 @@ function initGame() {
   timeInSeconds = 0;
   score = 0;
   maxAsteroids = 3;
-  asteroidSpeedMax = 5;
+  asteroidSpeedMax = 10;
   maxVolcanoes = 3;
-  volcanoSpeedMax = 4;
+  volcanoSpeedMax = 8;
   volcanoChance = 2;
   volcanoes = [];
   asteroids = [];
@@ -288,7 +288,7 @@ function tick() {
 
 function updateEverything() {
   // Moving BG code: http://jsfiddle.net/AbdiasSoftware/zupjZ/
-  bgPos -= 0.5;
+  bgPos -= 1;
   canvas.style.backgroundPosition = bgPos + "px -30px, " + bgPos + "px -30px";
 
   if (deathScreen) return;

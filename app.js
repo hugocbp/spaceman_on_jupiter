@@ -6,7 +6,7 @@
   Name: Hugo Carlos Borges Pinto
   SID: 100311857
 
-  Version Date: 2018-07-22
+  Version Date: 2018-07-24
 */
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");

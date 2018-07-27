@@ -67,6 +67,11 @@ let score = 0;
 let timeInSeconds = 0;
 let deathReason;
 
+// Highest Score
+let attempt = 0;
+let highestScore = 0;
+let highestTime = 0;
+
 // Intervals & Timers
 let gameInterval;
 let difficultyInterval;
@@ -369,6 +374,15 @@ function handleDeath(deathCause) {
   // TODO: Save on another variable deathTime?
   clearInterval(gameTimeInterval);
 
+  if (highestScore < score) {
+    highestScore = score;
+  }
+
+  if (highestTime < timeInSeconds) {
+    highestTime = timeInSeconds;
+  }
+
+  attempt++;
   deathReason = deathCause;
   deathScreen = true;
 
@@ -431,21 +445,31 @@ function drawDeathScreen() {
   ctx.fillText(death[deathReason].msg, CANVAS_CENTRE_X, CANVAS_BOTTOM - 450);
 
   ctx.font = "30px Orbitron";
-  ctx.fillText("Score: " + score, CANVAS_CENTRE_X, CANVAS_BOTTOM - 300);
+  ctx.fillText("Attempt: " + attempt, CANVAS_CENTRE_X, CANVAS_BOTTOM - 300);
+  ctx.fillText("Score: " + score, CANVAS_CENTRE_X, CANVAS_BOTTOM - 250);
   ctx.fillText(
-    "You survided for " + timeInSeconds + " second(s)",
+    "Time: " + timeInSeconds + " second(s)",
     CANVAS_CENTRE_X,
-    CANVAS_BOTTOM - 250
+    CANVAS_BOTTOM - 200
   );
+
+  ctx.fillText(
+    "Best Attempt: " + highestScore + " points | " + highestTime + " second(s)",
+    CANVAS_CENTRE_X,
+    CANVAS_BOTTOM - 100
+  );
+
   ctx.fillText(
     death[deathReason].explanation,
     CANVAS_CENTRE_X,
-    CANVAS_BOTTOM - 100
+    CANVAS_BOTTOM - 400
   );
   ctx.fillText("Click to play again", CANVAS_CENTRE_X, CANVAS_BOTTOM - 50);
 
   ctx.fillStyle = "red";
+
   ctx.font = "bold 200px Orbitron";
+
   ctx.fillText("You died", CANVAS_CENTRE_X, CANVAS_CENTRE_Y - 200);
 
   ctx.restore();

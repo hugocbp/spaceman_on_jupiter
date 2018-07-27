@@ -38,6 +38,11 @@ const ASTEROID_SIZE = 20;
 const ASTEROID_SPD_MIN = 2;
 const VOLCANO_SPD_MIN = 4;
 
+// UI (for performance)
+let scoreDOM = document.getElementById("score");
+let timeDOM = document.getElementById("time");
+let gameDOMUIInterval;
+
 // ART
 let bgPos = 30;
 const TEXT_COLOR = "white";
@@ -278,6 +283,8 @@ function initGame() {
   gameInterval = setInterval(tick, 1000 / FPS);
   difficultyInterval = setInterval(increaseDifficulty, DIFFICULTY_TIME);
   gameTimeInterval = setInterval(() => (timeInSeconds += 1), 1000);
+
+  renderDOMUI();
 }
 
 // TODO: Remove?
@@ -350,6 +357,8 @@ function handleDeath(deathCause) {
 
   deathReason = deathCause;
   deathScreen = true;
+
+  hideDOMUI();
 }
 
 function drawEverything() {
@@ -367,7 +376,7 @@ function drawEverything() {
     volcanoes.forEach(volcano => volcano.draw(ctx));
 
     // Game UI & Art
-    drawGameUI();
+    // drawGameUI();
     drawBottomPlanet();
   }
 }
@@ -426,11 +435,31 @@ function drawDeathScreen() {
   ctx.restore();
 }
 
-function drawGameUI() {
-  ctx.fillStyle = TEXT_COLOR;
-  ctx.font = "bold 30px Orbitron";
-  ctx.fillText("Score:" + score, 5, 30);
-  ctx.fillText("Time:" + timeInSeconds, 5, 60);
+// DISABLED for performance
+// function drawGameUI() {
+//   ctx.fillStyle = TEXT_COLOR;
+//   ctx.font = "bold 30px Orbitron";
+//   ctx.fillText("Score:" + score, 5, 30);
+//   ctx.fillText("Time:" + timeInSeconds, 5, 60);
+// }
+
+function renderDOMUI() {
+  scoreDOM.style.display = "block";
+  timeDOM.style.display = "block";
+
+  gameDOMUIInterval = setInterval(() => {
+    scoreDOM.innerHTML = "Score: " + score;
+    timeDOM.innerHTML = "Time: " + timeInSeconds;
+  }, 1000);
+}
+
+function hideDOMUI() {
+  scoreDOM.innerHTML = "";
+  timeDOM.innerHTML = "";
+  scoreDOM.style.display = "none";
+  timeDOM.style.display = "none";
+
+  clearInterval(gameDOMUIInterval);
 }
 
 function drawBottomPlanet() {

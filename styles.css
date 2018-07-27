@@ -26,3 +26,18 @@ canvas {
   background-position: 0 -30px, 0 -30px;
   background-size: cover, cover;
 }
+
+#ui {
+  color: white;
+  margin-left: 250px;
+  position: absolute;
+  font-size: 30px;
+}
+
+#time {
+  display: none;
+}
+
+#score {
+  display: none;
+}

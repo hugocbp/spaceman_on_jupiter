@@ -57,6 +57,19 @@ SPACEMAN_IMG.src = "images/spaceman.png";
 const SPACEMAN_THRUSTING_IMG = new Image();
 SPACEMAN_THRUSTING_IMG.src = "images/spaceman_thrusting.png";
 
+// SOUND
+const BG_SOUND = new Audio(
+  "sounds/258348__tristan-lohengrin__spaceship-atmosphere-03.ogg"
+);
+BG_SOUND.loop = true;
+
+const JETPACK_SOUND = new Audio("sounds/18380__inferno__hvrl.ogg");
+const DEATH_SOUND = new Audio("sounds/396798__scorpion67890__male-death-1.ogg");
+const VOLCANO_SOUND = new Audio("sounds/200466__wubitog__short-explosion.ogg");
+const DEATH_SCREEN_SOUND = new Audio(
+  "sounds/429195__womb-affliction__death.ogg"
+);
+
 // Game variables
 let startScreen = true;
 let deathScreen = false;
@@ -140,9 +153,12 @@ class Player {
 
   thrust(on) {
     if (on) {
+      JETPACK_SOUND.play();
       this.thrusting = true;
       this.currentGravityVelocity = 0;
     } else {
+      JETPACK_SOUND.pause();
+      JETPACK_SOUND.currentTime = 0;
       this.thrusting = false;
       this.currentThrust = 0;
     }
@@ -278,6 +294,10 @@ class Volcano {
 window.onload = drawStartScreen;
 
 function initGame() {
+  BG_SOUND.play();
+  DEATH_SCREEN_SOUND.pause();
+  DEATH_SCREEN_SOUND.currentTime = 0;
+
   // Start/Reset main variables
   timeInSeconds = 0;
   score = 0;
@@ -349,6 +369,7 @@ function generateAsteroids() {
 function generateVolcanoes() {
   // Adds chance to Volcano spawn
   if (rand(0, 100) > 100 - volcanoChance) {
+    VOLCANO_SOUND.play();
     let randX = rand(CANVAS_LEFT, CANVAS_RIGHT);
     volcanoes.push(
       new Volcano(
@@ -370,6 +391,7 @@ function increaseDifficulty() {
 }
 
 function handleDeath(deathCause) {
+  DEATH_SOUND.play();
   // Prevents time from increaseing after death
   // TODO: Save on another variable deathTime?
   clearInterval(gameTimeInterval);
@@ -412,6 +434,7 @@ function drawEverything() {
 }
 
 function drawStartScreen() {
+  BG_SOUND.play();
   ctx.save();
 
   ctx.textAlign = "center";
@@ -436,6 +459,7 @@ function drawStartScreen() {
 }
 
 function drawDeathScreen() {
+  DEATH_SCREEN_SOUND.play();
   ctx.save();
 
   ctx.textAlign = "center";

@@ -28,10 +28,12 @@ canvas {
 }
 
 #ui {
+  display: inline-block;
   color: white;
-  margin-left: 250px;
+  margin: 0 auto;
   position: absolute;
   font-size: 30px;
+  min-width: 1200px;
 }
 
 #time {

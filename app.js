@@ -34,7 +34,7 @@ const LATERAL_MOVEMENT = 4;
 // OBSTACLES
 // Scrolling Asteroids & Volcano - akn: 1045 Lab 11 - Summer 2018
 const ASTEROIDS_PER_SEC = 2;
-const ASTEROID_SIZE = 20;
+const ASTEROID_SIZE = 25;
 const ASTEROID_SPD_MIN = 2;
 const VOLCANO_SPD_MIN = 4;
 
@@ -47,11 +47,11 @@ let gameDOMUIInterval;
 let bgPos = 30;
 const TEXT_COLOR = "white";
 const ASTEROID_IMG = new Image();
-ASTEROID_IMG.src = "images/asteroid_small.png";
+ASTEROID_IMG.src = "images/asteroid_small_square.png";
 const VOLCANO_UP_IMG = new Image();
-VOLCANO_UP_IMG.src = "images/fireball.png";
+VOLCANO_UP_IMG.src = "images/fireball_square.png";
 const VOLCANO_DOWN_IMG = new Image();
-VOLCANO_DOWN_IMG.src = "images/fireball_down.png";
+VOLCANO_DOWN_IMG.src = "images/fireball_down_square.png";
 const SPACEMAN_IMG = new Image();
 SPACEMAN_IMG.src = "images/spaceman.png";
 const SPACEMAN_THRUSTING_IMG = new Image();
@@ -133,6 +133,16 @@ class Player {
     this.currentGravityVelocity = GRAVITY_SPEED;
   }
 
+  thrust(on) {
+    if (on) {
+      this.thrusting = true;
+      this.currentGravityVelocity = 0;
+    } else {
+      this.thrusting = false;
+      this.currentThrust = 0;
+    }
+  }
+
   update() {
     // Check death conditions
     if (this.pos.y <= CANVAS_TOP) handleDeath("orbit");
@@ -179,13 +189,14 @@ class Player {
 
   isCollidingWith(object) {
     // TODO: Debug collision distances
-    return this.pos.distance(object.pos) < 40;
+    return this.pos.distance(object.pos) < object.size + 15;
   }
 
   draw(ctx) {
     ctx.save();
 
     let playerImg = this.thrusting ? SPACEMAN_THRUSTING_IMG : SPACEMAN_IMG;
+    ctx.translate(-PLAYER_WIDTH / 2, -PLAYER_HEIGHT / 2);
     ctx.drawImage(
       playerImg,
       this.pos.x,
@@ -202,6 +213,7 @@ class Asteroid {
   constructor(x, y, dx) {
     this.pos = new Point(x, y);
     this.dx = dx;
+    this.size = ASTEROID_SIZE;
   }
 
   update() {
@@ -216,6 +228,7 @@ class Asteroid {
   draw(ctx) {
     ctx.save();
 
+    ctx.translate(-ASTEROID_SIZE / 2, -ASTEROID_SIZE / 2);
     ctx.drawImage(ASTEROID_IMG, this.pos.x, this.pos.y);
 
     ctx.restore();
@@ -227,6 +240,7 @@ class Volcano {
     this.pos = new Point(x, y);
     this.maxHeight = maxHeight;
     this.speed = new Point(0, speed);
+    this.size = VOLCANO_DOWN_IMG.width - 15;
   }
 
   update() {
@@ -376,8 +390,10 @@ function drawEverything() {
     volcanoes.forEach(volcano => volcano.draw(ctx));
 
     // Game UI & Art
-    // drawGameUI();
     drawBottomPlanet();
+
+    // Disabled for performance. Switched to DOM UI
+    // drawGameUI();
   }
 }
 
@@ -454,8 +470,8 @@ function renderDOMUI() {
 }
 
 function hideDOMUI() {
-  scoreDOM.innerHTML = "";
-  timeDOM.innerHTML = "";
+  scoreDOM.innerHTML = "Score: " + score;
+  timeDOM.innerHTML = "Time: " + timeInSeconds;
   scoreDOM.style.display = "none";
   timeDOM.style.display = "none";
 
@@ -488,19 +504,13 @@ canvas.addEventListener("click", () => {
 function startGameControls() {
   window.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") {
-      player.thrusting = true;
-
-      // TODO: Move logic to Player class?
-      player.currentGravityVelocity = 0;
+      player.thrust(true);
     }
   });
 
   window.addEventListener("keyup", e => {
     if (e.key === "ArrowUp") {
-      player.thrusting = false;
-
-      // TODO: Move logic to Player class?
-      player.currentThrust = 0;
+      player.thrust(false);
     }
   });
 

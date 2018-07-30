@@ -6,7 +6,7 @@
   Name: Hugo Carlos Borges Pinto
   SID: 100311857
 
-  Version Date: 2018-07-24
+  Version Date: 2018-07-27
 */
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
@@ -62,7 +62,6 @@ const BG_SOUND = new Audio(
   "sounds/258348__tristan-lohengrin__spaceship-atmosphere-03.ogg"
 );
 BG_SOUND.loop = true;
-
 const JETPACK_SOUND = new Audio("sounds/18380__inferno__hvrl.ogg");
 const DEATH_SOUND = new Audio("sounds/396798__scorpion67890__male-death-1.ogg");
 const VOLCANO_SOUND = new Audio("sounds/200466__wubitog__short-explosion.ogg");
@@ -392,7 +391,8 @@ function increaseDifficulty() {
 
 function handleDeath(deathCause) {
   DEATH_SOUND.play();
-  // Prevents time from increaseing after death
+
+  // Prevents time from increasing after death
   // TODO: Save on another variable deathTime?
   clearInterval(gameTimeInterval);
 

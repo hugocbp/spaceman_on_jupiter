@@ -24,6 +24,8 @@ const CANVAS_LEFT = 0;
 const CANVAS_TOP = 0;
 const CANVAS_CENTRE_X = canvas.width / 2;
 const CANVAS_CENTRE_Y = canvas.height / 2;
+
+// GAME CONFIGS
 const DIFFICULTY_TIME = 5000; // in ms
 
 // PHYSICS
@@ -32,11 +34,15 @@ const GRAVITY_SPEED = 0.2;
 const LATERAL_MOVEMENT = 4;
 
 // OBSTACLES
-// Scrolling Asteroids & Volcano - akn: 1045 Lab 11 - Summer 2018
 const ASTEROIDS_PER_SEC = 2;
 const ASTEROID_SIZE = 25;
+const ASTEROID_MAX_NUM = 3;
 const ASTEROID_SPD_MIN = 2;
+const ASTEROID_SPD_MAX = 10;
 const VOLCANO_SPD_MIN = 4;
+const VOLCANO_MAX_NUM = 3;
+const VOLCANO_SPD_MAX = 10;
+const VOLCANO_CHANCE = 2;
 
 // UI (for performance)
 let scoreDOM = document.getElementById("score");
@@ -229,6 +235,7 @@ class Player {
   }
 }
 
+// Scrolling Asteroids & Volcano - akn: 1045 Lab 11 - Summer 2018
 class Asteroid {
   constructor(x, y, dx) {
     this.pos = new Point(x, y);
@@ -300,11 +307,11 @@ function initGame() {
   // Start/Reset main variables
   timeInSeconds = 0;
   score = 0;
-  maxAsteroids = 3;
-  asteroidSpeedMax = 10;
-  maxVolcanoes = 3;
-  volcanoSpeedMax = 8;
-  volcanoChance = 2;
+  maxAsteroids = ASTEROID_MAX_NUM;
+  asteroidSpeedMax = ASTEROID_SPD_MAX;
+  maxVolcanoes = VOLCANO_MAX_NUM;
+  volcanoSpeedMax = VOLCANO_SPD_MAX;
+  volcanoChance = VOLCANO_CHANCE;
   volcanoes = [];
   asteroids = [];
 
@@ -427,9 +434,6 @@ function drawEverything() {
 
     // Game UI & Art
     drawBottomPlanet();
-
-    // Disabled for performance. Switched to DOM UI
-    // drawGameUI();
   }
 }
 
@@ -498,14 +502,6 @@ function drawDeathScreen() {
 
   ctx.restore();
 }
-
-// DISABLED for performance
-// function drawGameUI() {
-//   ctx.fillStyle = TEXT_COLOR;
-//   ctx.font = "bold 30px Orbitron";
-//   ctx.fillText("Score:" + score, 5, 30);
-//   ctx.fillText("Time:" + timeInSeconds, 5, 60);
-// }
 
 function renderDOMUI() {
   scoreDOM.style.display = "block";

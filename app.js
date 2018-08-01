@@ -339,10 +339,6 @@ function tick() {
 }
 
 function updateEverything() {
-  // Moving BG code: http://jsfiddle.net/AbdiasSoftware/zupjZ/
-  bgPos -= 1;
-  canvas.style.backgroundPosition = bgPos + "px -30px, " + bgPos + "px -30px";
-
   if (deathScreen) return;
 
   if (asteroids.length <= maxAsteroids) generateAsteroids();
@@ -360,6 +356,12 @@ function updateEverything() {
 
   // Update score
   score += initialAsteroids - asteroids.length;
+}
+
+function moveBackground() {
+  // Moving BG code: http://jsfiddle.net/AbdiasSoftware/zupjZ/
+  bgPos -= 1;
+  canvas.style.backgroundPosition = bgPos + "px -30px, " + bgPos + "px -30px";
 }
 
 function generateAsteroids() {
@@ -438,7 +440,14 @@ function drawEverything() {
 }
 
 function drawStartScreen() {
+  // Pause needs to come first so Chrome 66+ doesn't prevent playing
+  // before user interacts with page and throws error on console
+  // https://stackoverflow.com/questions/49930680/how-to-handle-uncaught-in-promise-domexception-play-failed-because-the-use
+  BG_SOUND.pause();
   BG_SOUND.play();
+
+  backgroundMovementInterval = setInterval(() => moveBackground(), 1000 / FPS);
+
   ctx.save();
 
   ctx.textAlign = "center";

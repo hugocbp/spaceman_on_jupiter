@@ -6,14 +6,10 @@
   Name: Hugo Carlos Borges Pinto
   SID: 100311857
 
-  Version Date: 2018-07-31
+  Version Date: 2018-08-01
 */
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-
-// Player position is controlled by mouse position in DEBUG_MODE
-// and gravity & thurst are bypassed
-const DEBUG_MODE = false;
 
 const FPS = 30;
 const PLAYER_HEIGHT = 104; // double spaceman img
@@ -25,15 +21,13 @@ const CANVAS_TOP = 0;
 const CANVAS_CENTRE_X = canvas.width / 2;
 const CANVAS_CENTRE_Y = canvas.height / 2;
 
-// GAME CONFIGS
-const DIFFICULTY_TIME = 5000; // in ms
-
-// PHYSICS
+// GAME CONFIGS - PHYSICS
 const THRUST_SPEED = 0.6;
 const GRAVITY_SPEED = 0.2;
 const LATERAL_MOVEMENT = 4;
 
-// OBSTACLES
+// GAME CONFIGS - OBSTACLES
+const DIFFICULTY_TIME = 5000; // in ms
 const ASTEROIDS_PER_SEC = 2;
 const ASTEROID_SIZE = 25;
 const ASTEROID_MAX_NUM = 3;
@@ -84,8 +78,6 @@ let volcanoes = [];
 let score = 0;
 let timeInSeconds = 0;
 let deathReason;
-
-// Highest Score
 let attempt = 0;
 let highestScore = 0;
 let highestTime = 0;
@@ -134,15 +126,13 @@ class Point {
   }
 
   translate(dx, dy) {
-    if (!DEBUG_MODE) {
-      this.x += dx;
-      this.y += dy;
-    }
+    this.x += dx;
+    this.y += dy;
   }
 
   distance(other) {
     console.assert(other instanceof Point);
-    return Math.hypot(this.x - other.x, this.y - other.y);
+    return Math.floor(Math.hypot(this.x - other.x, this.y - other.y));
   }
 }
 
@@ -163,7 +153,7 @@ class Player {
       this.currentGravityVelocity = 0;
     } else {
       JETPACK_SOUND.pause();
-      JETPACK_SOUND.currentTime = 0;
+      JETPACK_SOUND.currentTime = 0; // rewind to start
       this.thrusting = false;
       this.currentThrust = 0;
     }
@@ -197,8 +187,6 @@ class Player {
     }
 
     // Sides (LEFT & RIGHT)
-    // TODO: Refactor or redesign lateral movement for lateral momentum?
-    // TODO: Fix move right out of canvas bug
     if (this.movingRight && this.pos.x < CANVAS_RIGHT - LATERAL_MOVEMENT) {
       this.pos.x += LATERAL_MOVEMENT;
     }
@@ -214,7 +202,6 @@ class Player {
   }
 
   isCollidingWith(object) {
-    // TODO: Debug collision distances
     return this.pos.distance(object.pos) < object.size + 15;
   }
 
@@ -244,8 +231,7 @@ class Asteroid {
   }
 
   update() {
-    // TODO: Use Point method
-    this.pos.x -= this.dx;
+    this.pos.translate(-this.dx, 0);
   }
 
   isVisible() {
@@ -267,16 +253,15 @@ class Volcano {
     this.pos = new Point(x, y);
     this.maxHeight = maxHeight;
     this.speed = new Point(0, speed);
-    this.size = VOLCANO_DOWN_IMG.width - 15;
+    this.size = VOLCANO_DOWN_IMG.width - 20;
   }
 
   update() {
-    // TODO: Use Point method
     if (this.pos.y < CANVAS_BOTTOM - this.maxHeight) {
       this.speed.y *= -1;
     }
 
-    this.pos.y -= this.speed.y;
+    this.pos.translate(0, -this.speed.y);
   }
 
   isVisible() {
@@ -332,7 +317,6 @@ function initGame() {
   renderDOMUI();
 }
 
-// TODO: Remove?
 function tick() {
   updateEverything();
   drawEverything();
@@ -345,7 +329,7 @@ function updateEverything() {
   if (volcanoes.length <= maxVolcanoes) generateVolcanoes();
   player.update();
 
-  // For Score - TODO: Rethink score?
+  // For Score
   let initialAsteroids = asteroids.length;
 
   asteroids.forEach(asteroid => asteroid.update());
@@ -401,8 +385,6 @@ function increaseDifficulty() {
 function handleDeath(deathCause) {
   DEATH_SOUND.play();
 
-  // Prevents time from increasing after death
-  // TODO: Save on another variable deathTime?
   clearInterval(gameTimeInterval);
 
   if (highestScore < score) {
@@ -421,7 +403,6 @@ function handleDeath(deathCause) {
 }
 
 function drawEverything() {
-  ctx.fillStyle = "black"; // TODO: Remove?
   ctx.clearRect(0, 0, canvas.width, CANVAS_BOTTOM);
 
   if (startScreen) {
@@ -473,10 +454,10 @@ function drawStartScreen() {
 
 function drawDeathScreen() {
   DEATH_SCREEN_SOUND.play();
+
   ctx.save();
 
   ctx.textAlign = "center";
-
   ctx.fillStyle = death[deathReason].color;
   ctx.font = "50px Orbitron";
   ctx.fillText(death[deathReason].msg, CANVAS_CENTRE_X, CANVAS_BOTTOM - 450);
@@ -489,13 +470,11 @@ function drawDeathScreen() {
     CANVAS_CENTRE_X,
     CANVAS_BOTTOM - 200
   );
-
   ctx.fillText(
     "Best Attempt: " + highestScore + " points | " + highestTime + " second(s)",
     CANVAS_CENTRE_X,
     CANVAS_BOTTOM - 100
   );
-
   ctx.fillText(
     death[deathReason].explanation,
     CANVAS_CENTRE_X,
@@ -504,9 +483,7 @@ function drawDeathScreen() {
   ctx.fillText("Click to play again", CANVAS_CENTRE_X, CANVAS_BOTTOM - 50);
 
   ctx.fillStyle = "red";
-
   ctx.font = "bold 200px Orbitron";
-
   ctx.fillText("You died", CANVAS_CENTRE_X, CANVAS_CENTRE_Y - 200);
 
   ctx.restore();
@@ -523,8 +500,8 @@ function renderDOMUI() {
 }
 
 function hideDOMUI() {
-  scoreDOM.innerHTML = "Score: " + score;
-  timeDOM.innerHTML = "Time: " + timeInSeconds;
+  scoreDOM.innerHTML = "Score: 0";
+  timeDOM.innerHTML = "Time: 0";
   scoreDOM.style.display = "none";
   timeDOM.style.display = "none";
 
@@ -590,13 +567,6 @@ function startGameControls() {
       player.movingRight = false;
     }
   });
-
-  if (DEBUG_MODE) {
-    canvas.addEventListener("mousemove", e => {
-      player.pos.x = e.offsetX;
-      player.pos.y = e.offsetY;
-    });
-  }
 }
 
 // HELPERS
@@ -609,5 +579,5 @@ function rand(min, max) {
     min = 0;
   }
 
-  return Math.random() * (max - min) + min;
+  return Math.floor(Math.random() * (max - min) + min);
 }

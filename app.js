@@ -6,7 +6,7 @@
   Name: Hugo Carlos Borges Pinto
   SID: 100311857
 
-  Version Date: 2018-08-02
+  Version Date: 2018-08-03
 */
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
@@ -21,10 +21,10 @@ const CANVAS_TOP = 0;
 const CANVAS_CENTRE_X = canvas.width / 2;
 const CANVAS_CENTRE_Y = canvas.height / 2;
 
-// GAME CONFIGS - PHYSICS
+// GAME CONFIGS - PHYSICS (half if 60 FPS)
 const THRUST_SPEED = 0.6;
 const GRAVITY_SPEED = 0.2;
-const LATERAL_MOVEMENT = 4;
+const LATERAL_SPEED = 4;
 
 // GAME CONFIGS - OBSTACLES
 const DIFFICULTY_TIME = 5000; // in ms
@@ -41,7 +41,6 @@ const VOLCANO_CHANCE = 2;
 // UI (for performance)
 let scoreDOM = document.getElementById("score");
 let timeDOM = document.getElementById("time");
-let gameDOMUIInterval;
 
 // ART
 let bgPos = 30;
@@ -56,18 +55,16 @@ const SPACEMAN_IMG = new Image();
 SPACEMAN_IMG.src = "images/spaceman.png";
 const SPACEMAN_THRUSTING_IMG = new Image();
 SPACEMAN_THRUSTING_IMG.src = "images/spaceman_thrusting.png";
+// Compensate for spaceman img not being perfect square
+const COLLISION_OFFSET = 15;
 
 // SOUND
-const BG_SOUND = new Audio(
-  "sounds/258348__tristan-lohengrin__spaceship-atmosphere-03.ogg"
-);
-BG_SOUND.loop = true;
 const JETPACK_SOUND = new Audio("sounds/18380__inferno__hvrl.ogg");
 const DEATH_SOUND = new Audio("sounds/396798__scorpion67890__male-death-1.ogg");
 const VOLCANO_SOUND = new Audio("sounds/200466__wubitog__short-explosion.ogg");
-const DEATH_SCREEN_SOUND = new Audio(
-  "sounds/429195__womb-affliction__death.ogg"
-);
+const DEATH_SCREEN_SOUND = new Audio("sounds/429195_womb-affliction_death.ogg");
+const BG_SOUND = new Audio("sounds/258348_tristan-lohengrin_atmosphere-03.ogg");
+BG_SOUND.loop = true;
 
 // Game variables
 let startScreen = true;
@@ -82,17 +79,19 @@ let attempt = 0;
 let highestScore = 0;
 let highestTime = 0;
 
-// Intervals & Timers
-let gameInterval;
-let difficultyInterval;
-let gameTimeInterval;
-
 // Difficulty variables
 let maxAsteroids;
 let asteroidSpeedMax;
 let maxVolcanoes;
 let volcanoSpeedMax;
 let volcanoChance;
+
+// Intervals & Timers
+let gameInterval;
+let difficultyInterval;
+let gameTimeInterval;
+let backgroundMovementInterval;
+let gameDOMUIInterval;
 
 // Death Messages
 let death = {
@@ -187,12 +186,18 @@ class Player {
     }
 
     // Sides (LEFT & RIGHT)
-    if (this.movingRight && this.pos.x < CANVAS_RIGHT - LATERAL_MOVEMENT) {
-      this.pos.x += LATERAL_MOVEMENT;
+    if (
+      this.movingRight &&
+      this.pos.x < CANVAS_RIGHT - LATERAL_SPEED - PLAYER_WIDTH / 2
+    ) {
+      this.pos.x += LATERAL_SPEED;
     }
 
-    if (this.movingLeft && this.pos.x > CANVAS_LEFT + LATERAL_MOVEMENT) {
-      this.pos.x -= LATERAL_MOVEMENT;
+    if (
+      this.movingLeft &&
+      this.pos.x > CANVAS_LEFT + LATERAL_SPEED + PLAYER_WIDTH / 2
+    ) {
+      this.pos.x -= LATERAL_SPEED;
     }
   }
 
@@ -202,7 +207,7 @@ class Player {
   }
 
   isCollidingWith(object) {
-    return this.pos.distance(object.pos) < object.size + 15;
+    return this.pos.distance(object.pos) < object.size + COLLISION_OFFSET;
   }
 
   draw(ctx) {
@@ -253,7 +258,8 @@ class Volcano {
     this.pos = new Point(x, y);
     this.maxHeight = maxHeight;
     this.speed = new Point(0, speed);
-    this.size = VOLCANO_DOWN_IMG.width - 20;
+    // Offset to compensate squared image and rounded fireball art
+    this.size = VOLCANO_DOWN_IMG.width - 22;
   }
 
   update() {
@@ -310,16 +316,14 @@ function initGame() {
 
   startGameControls();
 
-  gameInterval = setInterval(tick, 1000 / FPS);
+  gameInterval = setInterval(() => {
+    updateEverything();
+    drawEverything();
+  }, 1000 / FPS);
   difficultyInterval = setInterval(increaseDifficulty, DIFFICULTY_TIME);
   gameTimeInterval = setInterval(() => (timeInSeconds += 1), 1000);
 
   renderDOMUI();
-}
-
-function tick() {
-  updateEverything();
-  drawEverything();
 }
 
 function updateEverything() {
@@ -338,7 +342,6 @@ function updateEverything() {
   volcanoes.forEach(volcano => volcano.update());
   volcanoes = volcanoes.filter(volcano => volcano.isVisible());
 
-  // Update score
   score += initialAsteroids - asteroids.length;
 }
 
@@ -421,10 +424,6 @@ function drawEverything() {
 }
 
 function drawStartScreen() {
-  // Pause needs to come first so Chrome 66+ doesn't prevent playing
-  // before user interacts with page and throws error on console
-  // https://stackoverflow.com/questions/49930680/how-to-handle-uncaught-in-promise-domexception-play-failed-because-the-use
-  BG_SOUND.pause();
   BG_SOUND.play();
 
   backgroundMovementInterval = setInterval(() => moveBackground(), 1000 / FPS);
@@ -443,8 +442,11 @@ function drawStartScreen() {
     CANVAS_CENTRE_X,
     CANVAS_BOTTOM - 300
   );
-
-  ctx.fillText("OBJECTIVE: Don't die", CANVAS_CENTRE_X, CANVAS_BOTTOM - 220);
+  ctx.fillText(
+    "OBJECTIVE: Survive as long as you can",
+    CANVAS_CENTRE_X,
+    CANVAS_BOTTOM - 220
+  );
 
   ctx.font = "30px Orbitron";
   ctx.fillText("Click to Start", CANVAS_CENTRE_X, CANVAS_BOTTOM - 50);

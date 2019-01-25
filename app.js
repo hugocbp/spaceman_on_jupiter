@@ -1,13 +1,11 @@
-/*
-  1045 Final Project - Summer 2018
-
-  Spaceman on Jupiter
-
-  Name: Hugo Carlos Borges Pinto
-  SID: 100311857
-
-  Version Date: 2018-08-03
-*/
+/**
+ **  Spaceman on Jupiter - A JavaScript game
+ **
+ **  Langara College
+ **  CPSC 1045 Intro to Web Programming
+ **  Final Project - Summer 2018
+ **  Author: Hugo Carlos Borges Pinto
+ **/
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 

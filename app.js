@@ -9,6 +9,10 @@
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
+// Player position is controlled by mouse position in DEBUG_MODE
+// and gravity & thurst are bypassed
+const DEBUG_MODE = true;
+
 const FPS = 30;
 const PLAYER_HEIGHT = 104; // double spaceman img
 const PLAYER_WIDTH = 64; // double spaceman img
@@ -123,8 +127,10 @@ class Point {
   }
 
   translate(dx, dy) {
-    this.x += dx;
-    this.y += dy;
+    if (!DEBUG_MODE) {
+      this.x += dx;
+      this.y += dy;
+    }
   }
 
   distance(other) {
@@ -234,7 +240,8 @@ class Asteroid {
   }
 
   update() {
-    this.pos.translate(-this.dx, 0);
+    if (DEBUG_MODE) this.pos.x -= this.dx;
+    else this.pos.translate(-this.dx, 0);
   }
 
   isVisible() {
@@ -261,11 +268,10 @@ class Volcano {
   }
 
   update() {
-    if (this.pos.y < CANVAS_BOTTOM - this.maxHeight) {
-      this.speed.y *= -1;
-    }
+    if (this.pos.y < CANVAS_BOTTOM - this.maxHeight) this.speed.y *= -1;
 
-    this.pos.translate(0, -this.speed.y);
+    if (DEBUG_MODE) this.pos.y -= this.speed.y;
+    else this.pos.translate(0, -this.speed.y);
   }
 
   isVisible() {
@@ -567,6 +573,13 @@ function startGameControls() {
       player.movingRight = false;
     }
   });
+
+  if (DEBUG_MODE) {
+    canvas.addEventListener("mousemove", e => {
+      player.pos.x = e.offsetX;
+      player.pos.y = e.offsetY;
+    });
+  }
 }
 
 // HELPERS

@@ -12,6 +12,16 @@ The requirements were:
 
 Some small improvements were made after final submission.
 
+## How to Play
+
+1. Download
+2. Extract
+3. Open index.html on Chrome or another browser
+
+## Screenshot
+
+![](images/spaceman_ss.jpg)
+
 ## Assets
 
 All assets are licensed Creative Commons or market as Public Domain.

@@ -83,7 +83,7 @@ let gameState = {
   highestScore: 0,
   highestTime: 0,
   // Difficulty variables
-  maxAsteroids: 0,
+  maxAsteroids: 3,
   asteroidSpeedMax: 0,
   maxVolcanoes: 0,
   volcanoSpeedMax: 0,
@@ -348,7 +348,7 @@ function initGame() {
 function updateEverything() {
   if (gameState.deathScreen) return;
 
-  // if (gameState.asteroids.length <= gameState.maxAsteroids) generateAsteroids();
+  if (gameState.asteroids.length <= gameState.maxAsteroids) generateAsteroids();
   if (gameState.volcanoes.length <= gameState.maxVolcanoes) generateVolcanoes();
   gameState.player.update();
 

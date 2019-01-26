@@ -11,7 +11,7 @@ let ctx = canvas.getContext("2d");
 
 // Player position is controlled by mouse position in DEBUG_MODE
 // and gravity & thurst are bypassed
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 const FPS = 30;
 const PLAYER_HEIGHT = 104; // double spaceman img
@@ -35,6 +35,7 @@ const ASTEROID_SIZE = 25;
 const ASTEROID_MAX_NUM = 3;
 const ASTEROID_SPD_MIN = 2;
 const ASTEROID_SPD_MAX = 10;
+const VOLCANO_SIZE = 50;
 const VOLCANO_SPD_MIN = 4;
 const VOLCANO_MAX_NUM = 3;
 const VOLCANO_SPD_MAX = 10;
@@ -211,7 +212,15 @@ class Player {
   }
 
   isCollidingWith(object) {
-    return this.pos.distance(object.pos) < object.size + COLLISION_OFFSET;
+    let headCollisionPoint = new Point(this.pos.x, this.pos.y - 52);
+    let centerCollisionPoint = new Point(this.pos.x, this.pos.y);
+    let feetCollisionPoint = new Point(this.pos.x, this.pos.y + 50);
+
+    return (
+      centerCollisionPoint.distance(object.pos) < object.size ||
+      headCollisionPoint.distance(object.pos) < object.size ||
+      feetCollisionPoint.distance(object.pos) < object.size
+    );
   }
 
   draw(ctx) {
@@ -236,7 +245,7 @@ class Asteroid {
   constructor(x, y, dx) {
     this.pos = new Point(x, y);
     this.dx = dx;
-    this.size = ASTEROID_SIZE;
+    this.size = ASTEROID_SIZE - 12;
   }
 
   update() {
@@ -264,7 +273,7 @@ class Volcano {
     this.maxHeight = maxHeight;
     this.speed = new Point(0, speed);
     // Offset to compensate squared image and rounded fireball art
-    this.size = VOLCANO_DOWN_IMG.width - 22;
+    this.size = VOLCANO_SIZE - 30;
   }
 
   update() {
@@ -281,6 +290,7 @@ class Volcano {
   draw(ctx) {
     ctx.save();
 
+    ctx.translate(-VOLCANO_SIZE / 2, -VOLCANO_SIZE / 2);
     if (this.speed.y > 0) {
       ctx.drawImage(VOLCANO_UP_IMG, this.pos.x, this.pos.y);
     } else {
@@ -317,7 +327,6 @@ function initGame() {
 
   // Setup new game
   player = new Player(50, CANVAS_BOTTOM / 2 - 200);
-
   startGameControls();
 
   gameInterval = setInterval(() => {

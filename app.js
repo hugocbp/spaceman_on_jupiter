@@ -70,31 +70,31 @@ const BG_SOUND = new Audio("sounds/258348_tristan-lohengrin_atmosphere-03.ogg");
 BG_SOUND.loop = true;
 
 // Game variables
-let startScreen = true;
-let deathScreen = false;
-let player;
-let asteroids = [];
-let volcanoes = [];
-let score = 0;
-let timeInSeconds = 0;
-let deathReason;
-let attempt = 0;
-let highestScore = 0;
-let highestTime = 0;
-
-// Difficulty variables
-let maxAsteroids;
-let asteroidSpeedMax;
-let maxVolcanoes;
-let volcanoSpeedMax;
-let volcanoChance;
-
-// Intervals & Timers
-let gameInterval;
-let difficultyInterval;
-let gameTimeInterval;
-let backgroundMovementInterval;
-let gameDOMUIInterval;
+let gameState = {
+  startScreen: true,
+  deathScreen: false,
+  player: null,
+  asteroids: [],
+  volcanoes: [],
+  score: 0,
+  timeInSeconds: 0,
+  deathReason: null,
+  attempt: 0,
+  highestScore: 0,
+  highestTime: 0,
+  // Difficulty variables
+  maxAsteroids: 0,
+  asteroidSpeedMax: 0,
+  maxVolcanoes: 0,
+  volcanoSpeedMax: 0,
+  volcanoChance: 0,
+  // Intervals & Timers
+  gameInterval: null,
+  difficultyInterval: 0,
+  gameTimeInterval: 0,
+  backgroundMovementInterval: 0,
+  gameDOMUIInterval: 0
+};
 
 // Death Messages
 let death = {
@@ -167,8 +167,8 @@ class Player {
     // Check death conditions
     if (this.pos.y <= CANVAS_TOP) handleDeath("orbit");
     if (this.pos.y >= CANVAS_BOTTOM - PLAYER_HEIGHT) handleDeath("jupiter");
-    if (this.hasCollision(asteroids)) handleDeath("asteroid");
-    if (this.hasCollision(volcanoes)) handleDeath("volcano");
+    if (this.hasCollision(gameState.asteroids)) handleDeath("asteroid");
+    if (this.hasCollision(gameState.volcanoes)) handleDeath("volcano");
 
     // Gravity (DOWN)
     if (!this.thrusting && this.pos.y <= CANVAS_BOTTOM - PLAYER_HEIGHT) {
@@ -310,52 +310,62 @@ function initGame() {
   DEATH_SCREEN_SOUND.currentTime = 0;
 
   // Start/Reset main variables
-  timeInSeconds = 0;
-  score = 0;
-  maxAsteroids = ASTEROID_MAX_NUM;
-  asteroidSpeedMax = ASTEROID_SPD_MAX;
-  maxVolcanoes = VOLCANO_MAX_NUM;
-  volcanoSpeedMax = VOLCANO_SPD_MAX;
-  volcanoChance = VOLCANO_CHANCE;
-  volcanoes = [];
-  asteroids = [];
+  gameState.timeInSeconds = 0;
+  gameState.score = 0;
+  // gameState.maxAsteroids = ASTEROID_MAX_NUM;
+  gameState.asteroidSpeedMax = ASTEROID_SPD_MAX;
+  gameState.maxVolcanoes = VOLCANO_MAX_NUM;
+  gameState.volcanoSpeedMax = VOLCANO_SPD_MAX;
+  gameState.volcanoChance = VOLCANO_CHANCE;
+  gameState.volcanoes = [];
+  gameState.asteroids = [];
 
   // Clear main timers & intervals to allow "Play again" after death
-  clearInterval(gameInterval);
-  clearInterval(difficultyInterval);
-  clearInterval(gameTimeInterval);
+  clearInterval(gameState.gameInterval);
+  clearInterval(gameState.difficultyInterval);
+  clearInterval(gameState.gameTimeInterval);
 
   // Setup new game
-  player = new Player(50, CANVAS_BOTTOM / 2 - 200);
+  gameState.player = new Player(50, CANVAS_BOTTOM / 2 - 200);
   startGameControls();
 
-  gameInterval = setInterval(() => {
+  gameState.gameInterval = setInterval(() => {
     updateEverything();
     drawEverything();
   }, 1000 / FPS);
-  difficultyInterval = setInterval(increaseDifficulty, DIFFICULTY_TIME);
-  gameTimeInterval = setInterval(() => (timeInSeconds += 1), 1000);
+  gameState.difficultyInterval = setInterval(
+    increaseDifficulty,
+    DIFFICULTY_TIME
+  );
+  gameState.gameTimeInterval = setInterval(
+    () => (gameState.timeInSeconds += 1),
+    1000
+  );
 
   renderDOMUI();
 }
 
 function updateEverything() {
-  if (deathScreen) return;
+  if (gameState.deathScreen) return;
 
-  if (asteroids.length <= maxAsteroids) generateAsteroids();
-  if (volcanoes.length <= maxVolcanoes) generateVolcanoes();
-  player.update();
+  // if (gameState.asteroids.length <= gameState.maxAsteroids) generateAsteroids();
+  if (gameState.volcanoes.length <= gameState.maxVolcanoes) generateVolcanoes();
+  gameState.player.update();
 
   // For Score
-  let initialAsteroids = asteroids.length;
+  let initialAsteroids = gameState.asteroids.length;
 
-  asteroids.forEach(asteroid => asteroid.update());
-  asteroids = asteroids.filter(asteroid => asteroid.isVisible());
+  gameState.asteroids.forEach(asteroid => asteroid.update());
+  gameState.asteroids = gameState.asteroids.filter(asteroid =>
+    asteroid.isVisible()
+  );
 
-  volcanoes.forEach(volcano => volcano.update());
-  volcanoes = volcanoes.filter(volcano => volcano.isVisible());
+  gameState.volcanoes.forEach(volcano => volcano.update());
+  gameState.volcanoes = gameState.volcanoes.filter(volcano =>
+    volcano.isVisible()
+  );
 
-  score += initialAsteroids - asteroids.length;
+  gameState.score += initialAsteroids - gameState.asteroids.length;
 }
 
 function moveBackground() {
@@ -365,55 +375,55 @@ function moveBackground() {
 }
 
 function generateAsteroids() {
-  asteroids.push(
+  gameState.asteroids.push(
     new Asteroid(
       CANVAS_RIGHT - ASTEROID_SIZE,
       rand(CANVAS_TOP, CANVAS_BOTTOM),
-      rand(ASTEROID_SPD_MIN, asteroidSpeedMax)
+      rand(ASTEROID_SPD_MIN, gameState.asteroidSpeedMax)
     )
   );
 }
 
 function generateVolcanoes() {
   // Adds chance to Volcano spawn
-  if (rand(0, 100) > 100 - volcanoChance) {
+  if (rand(0, 100) > 100 - gameState.volcanoChance) {
     VOLCANO_SOUND.play();
     let randX = rand(CANVAS_LEFT, CANVAS_RIGHT);
-    volcanoes.push(
+    gameState.volcanoes.push(
       new Volcano(
         randX,
         CANVAS_BOTTOM,
         rand(CANVAS_TOP, CANVAS_BOTTOM),
-        rand(VOLCANO_SPD_MIN, volcanoSpeedMax)
+        rand(VOLCANO_SPD_MIN, gameState.volcanoSpeedMax)
       )
     );
   }
 }
 
 function increaseDifficulty() {
-  maxAsteroids += 1;
-  asteroidSpeedMax += 1;
-  maxVolcanoes += 1;
-  volcanoSpeedMax += 1;
-  volcanoChance += 1;
+  // gameState.maxAsteroids += 1;
+  gameState.asteroidSpeedMax += 1;
+  gameState.maxVolcanoes += 1;
+  gameState.volcanoSpeedMax += 1;
+  gameState.volcanoChance += 1;
 }
 
 function handleDeath(deathCause) {
   DEATH_SOUND.play();
 
-  clearInterval(gameTimeInterval);
+  clearInterval(gameState.gameTimeInterval);
 
-  if (highestScore < score) {
-    highestScore = score;
+  if (gameState.highestScore < gameState.score) {
+    gameState.highestScore = gameState.score;
   }
 
-  if (highestTime < timeInSeconds) {
-    highestTime = timeInSeconds;
+  if (gameState.highestTime < gameState.timeInSeconds) {
+    gameState.highestTime = gameState.timeInSeconds;
   }
 
-  attempt++;
-  deathReason = deathCause;
-  deathScreen = true;
+  gameState.attempt++;
+  gameState.deathReason = deathCause;
+  gameState.deathScreen = true;
 
   hideDOMUI();
 }
@@ -421,15 +431,15 @@ function handleDeath(deathCause) {
 function drawEverything() {
   ctx.clearRect(0, 0, canvas.width, CANVAS_BOTTOM);
 
-  if (startScreen) {
+  if (gameState.startScreen) {
     drawStartScreen();
-  } else if (deathScreen) {
+  } else if (gameState.deathScreen) {
     drawDeathScreen();
   } else {
     // Game Objects
-    player.draw(ctx);
-    asteroids.forEach(asteroid => asteroid.draw(ctx));
-    volcanoes.forEach(volcano => volcano.draw(ctx));
+    gameState.player.draw(ctx);
+    gameState.asteroids.forEach(asteroid => asteroid.draw(ctx));
+    gameState.volcanoes.forEach(volcano => volcano.draw(ctx));
 
     // Game UI & Art
     drawBottomPlanet();
@@ -439,7 +449,10 @@ function drawEverything() {
 function drawStartScreen() {
   BG_SOUND.play();
 
-  backgroundMovementInterval = setInterval(() => moveBackground(), 1000 / FPS);
+  gameState.backgroundMovementInterval = setInterval(
+    () => moveBackground(),
+    1000 / FPS
+  );
 
   ctx.save();
 
@@ -473,25 +486,41 @@ function drawDeathScreen() {
   ctx.save();
 
   ctx.textAlign = "center";
-  ctx.fillStyle = death[deathReason].color;
+  ctx.fillStyle = death[gameState.deathReason].color;
   ctx.font = "50px Orbitron";
-  ctx.fillText(death[deathReason].msg, CANVAS_CENTRE_X, CANVAS_BOTTOM - 450);
+  ctx.fillText(
+    death[gameState.deathReason].msg,
+    CANVAS_CENTRE_X,
+    CANVAS_BOTTOM - 450
+  );
 
   ctx.font = "30px Orbitron";
-  ctx.fillText("Attempt: " + attempt, CANVAS_CENTRE_X, CANVAS_BOTTOM - 300);
-  ctx.fillText("Score: " + score, CANVAS_CENTRE_X, CANVAS_BOTTOM - 250);
   ctx.fillText(
-    "Time: " + timeInSeconds + " second(s)",
+    "Attempt: " + gameState.attempt,
+    CANVAS_CENTRE_X,
+    CANVAS_BOTTOM - 300
+  );
+  ctx.fillText(
+    "Score: " + gameState.score,
+    CANVAS_CENTRE_X,
+    CANVAS_BOTTOM - 250
+  );
+  ctx.fillText(
+    "Time: " + gameState.timeInSeconds + " second(s)",
     CANVAS_CENTRE_X,
     CANVAS_BOTTOM - 200
   );
   ctx.fillText(
-    "Best Attempt: " + highestScore + " points | " + highestTime + " second(s)",
+    "Best Attempt: " +
+      gameState.highestScore +
+      " points | " +
+      gameState.highestTime +
+      " second(s)",
     CANVAS_CENTRE_X,
     CANVAS_BOTTOM - 100
   );
   ctx.fillText(
-    death[deathReason].explanation,
+    death[gameState.deathReason].explanation,
     CANVAS_CENTRE_X,
     CANVAS_BOTTOM - 400
   );
@@ -508,9 +537,9 @@ function renderDOMUI() {
   scoreDOM.style.display = "block";
   timeDOM.style.display = "block";
 
-  gameDOMUIInterval = setInterval(() => {
-    scoreDOM.innerHTML = "Score: " + score;
-    timeDOM.innerHTML = "Time: " + timeInSeconds;
+  gameState.gameDOMUIInterval = setInterval(() => {
+    scoreDOM.innerHTML = "Score: " + gameState.score;
+    timeDOM.innerHTML = "Time: " + gameState.timeInSeconds;
   }, 1000);
 }
 
@@ -520,7 +549,7 @@ function hideDOMUI() {
   scoreDOM.style.display = "none";
   timeDOM.style.display = "none";
 
-  clearInterval(gameDOMUIInterval);
+  clearInterval(gameState.gameDOMUIInterval);
 }
 
 function drawBottomPlanet() {
@@ -537,11 +566,11 @@ function drawBottomPlanet() {
 
 // CONTROLS
 canvas.addEventListener("click", () => {
-  if (startScreen) {
-    startScreen = false;
+  if (gameState.startScreen) {
+    gameState.startScreen = false;
     initGame();
-  } else if (deathScreen) {
-    deathScreen = false;
+  } else if (gameState.deathScreen) {
+    gameState.deathScreen = false;
     initGame();
   }
 });
@@ -549,44 +578,44 @@ canvas.addEventListener("click", () => {
 function startGameControls() {
   window.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") {
-      player.thrust(true);
+      gameState.player.thrust(true);
     }
   });
 
   window.addEventListener("keyup", e => {
     if (e.key === "ArrowUp") {
-      player.thrust(false);
+      gameState.player.thrust(false);
     }
   });
 
   window.addEventListener("keydown", e => {
     if (e.key === "ArrowLeft") {
-      player.movingLeft = true;
+      gameState.player.movingLeft = true;
     }
   });
 
   window.addEventListener("keyup", e => {
     if (e.key === "ArrowLeft") {
-      player.movingLeft = false;
+      gameState.player.movingLeft = false;
     }
   });
 
   window.addEventListener("keydown", e => {
     if (e.key === "ArrowRight") {
-      player.movingRight = true;
+      gameState.player.movingRight = true;
     }
   });
 
   window.addEventListener("keyup", e => {
     if (e.key === "ArrowRight") {
-      player.movingRight = false;
+      gameState.player.movingRight = false;
     }
   });
 
   if (DEBUG_MODE) {
     canvas.addEventListener("mousemove", e => {
-      player.pos.x = e.offsetX;
-      player.pos.y = e.offsetY;
+      gameState.player.pos.x = e.offsetX;
+      gameState.player.pos.y = e.offsetY;
     });
   }
 }

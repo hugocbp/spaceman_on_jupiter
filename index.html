@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Spaceman On Jupiter - A JavaScript Game</title>
+  </head>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="styles.css">
-	<title>1045 Final Project</title>
-</head>
-
-<body>
-	<!--
+  <body>
+    <!--
 		1045 Final Project - Summer 2018
 		
 		Spaceman on Jupiter
@@ -18,19 +17,17 @@
 		SID: 100311857 
 	-->
 
+    <div id="container">
+      <div id="ui">
+        <p id="score">Score: 0</p>
+        <p id="time">Time: 0</p>
+      </div>
+      <canvas id="canvas" width="1200" height="800"></canvas>
+    </div>
 
-	<div id="container">
-		<div id="ui">
-			<p id="score">Score: 0</p>
-			<p id="time">Time: 0</p>
-		</div>
-		<canvas id="canvas" width="1200" height="800"></canvas>
-	</div>
+    <!-- Just to force Google Font load before canvas -->
+    <footer>Hugo Carlos Borges Pinto</footer>
 
-	<!-- Just to force Google Font load before canvas -->
-	<footer>Hugo Carlos Borges Pinto</footer>
-
-	<script src="app.js"></script>
-</body>
-
+    <script src="app.js"></script>
+  </body>
 </html>

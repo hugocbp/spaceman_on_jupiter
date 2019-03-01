@@ -12,15 +12,22 @@ The requirements were:
 
 Some small improvements were made after final submission.
 
+Interact with the page to hear the background music (due to browsers limitations
+on playing audio on recently loaded pages).
+
 ## How to Play
+
+Play on [Heroku](https://spaceman-on-jupiter.herokuapp.com/) or
 
 1. Download
 2. Extract
 3. Open index.html on Chrome or another browser
 
-## Screenshot
+## Demo
 
-![](images/spaceman_ss.jpg)
+<p align="center">
+  <img src="images/spaceman-demo.gif" align="center" >
+</p>
 
 ## Assets
 
